@@ -1,0 +1,4 @@
+1	101	3	25°	concreto	30%RH	2	
+1	102	2	26°	concreto	31%RH	1	
+1	103	2	24°	concreto	33%RH	3	
+1	104	1	23°	concreto	31%RH	1
