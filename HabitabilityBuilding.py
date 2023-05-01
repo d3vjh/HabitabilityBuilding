@@ -1,5 +1,46 @@
 #!/bin/python3
 
+import psycopg2, signal, os, sys, requests, time 
+
+
+
+class Database:
+    __instance = None
+
+    @staticmethod
+    def getInstance():
+        """Static access method to Singleton instance."""
+        if Database.__instance is None:
+            Database()
+        return Database.__instance
+
+    def __init__(self):
+        """Virtually private constructor"""
+        if Database.__instance is not None:
+            raise Exception(
+                "Another instance of this class already exists! Please use Database.getInstance() to access it.")
+        else:
+            Database.__instance = self
+            self.connection = psycopg2.connect(
+                host="localhost",
+                database="test",  # This database must be updated later
+                user="postgres",
+                password="password")
+
+    def executeQuery(self, query):
+        """Method to execute a query on the database."""
+        cursor = self.connection.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    def closeConnection(self):
+        """Method to close the database connection."""
+        self.connection.close()
+
+
+
 class Apartment:
     def __init__(self, numberApartment, airHumidity, ambientAirTemperature, apartmentMaterial, roomQuantity,
                  personQuantity, personClothing):
@@ -50,6 +91,17 @@ class Building:
             self.Apartments[numberApartment2].addNeighbor(numberApartment1)
 
 
+class Person:
+    def __init__(self, name, lastName, apartment, clothes):
+        self.work = None
+        self.name = name
+        self.lastName = lastName
+        self.apartment = apartment
+        self.clothes = clothes
+        
+    def setWork(self, work):
+        self.work = work
+
 class BDD:
 
     @staticmethod
@@ -66,8 +118,9 @@ class BDD:
             personQuantity = apartment[5]
             personClothing = apartment[6]
 
-            build.addApartment(int(numberApartment), airHumidity, ambientAirTemperature, apartmentMaterial, roomQuantity,
-                            personQuantity, personClothing)
+            build.addApartment(int(numberApartment), airHumidity, ambientAirTemperature, apartmentMaterial,
+                               roomQuantity,
+                               personQuantity, personClothing)
 
         file.close()
 
@@ -82,12 +135,42 @@ class BDD:
             build.addNeighbor(int(numberApartment1), int(numberApartment2))
         file.close()
 
+class Menu:
+    @staticmethod
+    def initialMenu():
+        os.system("clear")
+        os.system("figlet \"Habitability Building\"")
+
+
 
 if __name__ == '__main__':
 
-    bd = Building()
-    BDD.loadApartments(bd)
-    BDD.loadNeighbors(bd)
+     
+    
+    db = Database.getInstance()
 
-    bd.Apartments[101].getInfo()
+    def sig_handler(sig, frame):
+        print("\n\n[!] Exiting ...")
+        print("[!] Closing Instance with the database")
+        print("Bye ")
+        db.closeConnection()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, sig_handler)
+
+
+    Menu.initialMenu()
+    a = input("Hola") 
+    #    bd = Building()
+    #    BDD.loadApartments(bd)
+    #    BDD.loadNeighbors(bd)
+
+    #    bd.Apartments[503].getInfo()
+    
+
+    result = db.executeQuery("SELECT * FROM habitantes")
+    print(result[2])
+    db.closeConnection()
+#    os.system("kitty +kitten icat /home/d3vjh/Desktop/fondos/Wallpaper.jpg")
+    
 
