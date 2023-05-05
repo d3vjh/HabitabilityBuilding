@@ -1,6 +1,6 @@
 #!/bin/python3
 
-import psycopg2, signal, os, sys, requests, time 
+import psycopg2, signal, os, sys, requests, time, re 
 
 
 
@@ -27,13 +27,26 @@ class Database:
                 user="postgres",
                 password="password")
 
-    def executeQuery(self, query):
+    def executeQuery(self, query, args=None):
         """Method to execute a query on the database."""
         cursor = self.connection.cursor()
-        cursor.execute(query)
-        result = cursor.fetchall()
-        cursor.close()
-        return result
+        try:
+            if args:
+                cursor.execute(query, args)
+            else:
+                cursor.execute(query)
+            if cursor.description:
+                result = cursor.fetchall()
+            else:
+                result = None
+            self.connection.commit()
+            cursor.close()
+            return result
+        except:
+            self.connection.rollback()
+            raise
+        finally:
+            cursor.close()
 
     def closeConnection(self):
         """Method to close the database connection."""
@@ -103,7 +116,7 @@ class Building:
 
 
 
-"""A global instance is created to access the Building"""
+"""A global instance is created to access the Building""" 
 building = Building()
 
 
@@ -120,26 +133,41 @@ class Person:
 
 
 class BDD:
+#Create
+    @staticmethod
+    def createPerson(numApartment, n_name_person, n_lastname_person):
+        try:
+            q = "INSERT INTO person(k_id_apartment, n_name_person, n_lastname_person) VALUES (%s, %s, %s);"
+            args = (numApartment, n_name_person, n_lastname_person)
+            db.executeQuery(q, args)
+            # Agregar el resto de parámetros && la condición NOT NULL
+        except psycopg2.Error as e:
+            print("[BDD] Error en la creación de la persona: ", e)
+            input("Press any key to continue...")
 
 
 #Read
     @staticmethod
     def loadApartments(build):
-        db = Database.getInstance()
-        result = db.executeQuery("SELECT k_idapartment, q_airhumidity, q_ambientairtemperature, n_aparmentmaterial, q_quiantityroom, q_quantityperson, b_ishabitability FROM apartments;")
+        try:
+            result = db.executeQuery("SELECT k_id_apartment, q_air_humidity, q_ambient_air_temperature, n_apartment_material, q_quantity_room, q_quantity_person, b_is_habitable FROM apartment;")
 
-        for i in range(len(result)):
-            numberApartment = result[i][0]
-            airHumidity = result[i][1]
-            ambientAirTemperature = result[i][2]
-            apartmentMaterial = result[i][3]
-            roomQuantity = result[i][4]
-            personQuantity = result[i][5]
-            isHabitability = result[i][6]
-            build.addApartment(int(numberApartment), airHumidity, ambientAirTemperature, apartmentMaterial,
-                           roomQuantity,
-                           personQuantity, isHabitability)
-        db.closeConnection()
+            for i in range(len(result)):
+                numberApartment = result[i][0]
+                airHumidity = result[i][1]
+                ambientAirTemperature = result[i][2]
+                apartmentMaterial = result[i][3]
+                roomQuantity = result[i][4]
+                personQuantity = result[i][5]
+                isHabitability = result[i][6]
+                build.addApartment(int(numberApartment), airHumidity, ambientAirTemperature, apartmentMaterial,
+                               roomQuantity,
+                               personQuantity, isHabitability)
+        except psycopg2.Error as e:
+            print("[BDD] Error en la operación de base de datos:", e)
+            input("Press any key to continue...")
+        
+
 
     @staticmethod
     def loadNeighbors(build):
@@ -152,7 +180,27 @@ class BDD:
             build.addNeighbor(int(numberApartment1), int(numberApartment2))
         file.close()
 
+
 class Menu:
+
+    @staticmethod
+    def Menu_createPerson():
+        os.system("clear")
+    
+        numApartment = int(input("[+] Ingrese el número del apartamento en el que va a estar: "))
+        while numApartment not in building.Apartments:
+            numApartment = int(input("[!] El número de apartamento no existe, porfavor verifique de nuevo: "))
+        n_name_person = input("[+] Ingrese el nombre de la persona: ")
+        while not re.match("^[A-Za-z]*$", n_name_person):
+            n_name_person = input("[!] Ingrese un nombre válido, sin números ni carácteres especiales: ")
+        n_lastname_person = input("[+] Ingrese el apellido de la persona: ")
+        while not re.match("^[A-Za-z]*$", n_lastname_person):
+            n_lastname_person =  input("[!] Ingrese un apellido válido, sin números ni carácteres especiales:")
+
+        BDD.createPerson(numApartment, n_name_person, n_lastname_person)
+        Menu.initialMenu()
+            # Ingrese el resto de valores 
+       
 
     @staticmethod
     def Menu_getApartmentInfo():
@@ -174,14 +222,16 @@ class Menu:
         os.system("clear")
         os.system("figlet \"Habitability Building\"")
         print("[1] Obtener información de un apartamento")
-        print("[2] Actualizar información de un apartamento")
+        print("[2] Agregar una persona a un apartamento")
 
 
         while True:
             try:
                 opc = int(input("Ingrese una opción: "))
                 if opc == 1:
-                  Menu.Menu_getApartmentInfo()
+                    Menu.Menu_getApartmentInfo()
+                elif opc == 2:
+                    Menu.Menu_createPerson()
                 elif  opc == 9:
                     sys.exit(0)
             except ValueError:
