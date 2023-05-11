@@ -84,41 +84,41 @@ ALTER TABLE public.person OWNER TO postgres;
 --
 
 COPY public.apartment (k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable, k_building) FROM stdin;
-101	0	0	Concreto	1	0	f	1
 102	0	0	Concreto	1	0	f	1
 103	0	0	Concreto	2	0	f	1
-104	0	0	Concreto	2	0	f	1
 105	0	0	Concreto	3	0	f	1
-201	0	0	Concreto	1	0	f	1
 202	0	0	Concreto	1	0	f	1
-203	0	0	Concreto	2	0	f	1
-204	0	0	Concreto	2	0	f	1
-205	0	0	Concreto	3	0	f	1
 301	0	0	Concreto	1	0	f	1
-302	0	0	Concreto	1	0	f	1
 303	0	0	Concreto	2	0	f	1
-304	0	0	Concreto	2	0	f	1
-305	0	0	Concreto	3	0	f	1
-401	0	0	Concreto	1	0	f	1
-402	0	0	Concreto	1	0	f	1
-403	0	0	Concreto	2	0	f	1
-404	0	0	Concreto	2	0	f	1
 405	0	0	Concreto	3	0	f	1
-501	0	0	Concreto	1	0	f	1
 502	0	0	Concreto	1	0	f	1
-503	0	0	Concreto	2	0	f	1
 504	0	0	Concreto	2	0	f	1
-505	0	0	Concreto	3	0	f	1
-601	0	0	Concreto	1	0	f	1
-602	0	0	Concreto	1	0	f	1
-603	0	0	Concreto	2	0	f	1
 604	0	0	Concreto	2	0	f	1
 605	0	0	Concreto	3	0	f	1
 701	0	0	Concreto	1	0	f	1
 702	0	0	Concreto	1	0	f	1
 703	0	0	Concreto	2	0	f	1
 704	0	0	Concreto	2	0	f	1
-705	0	0	Concreto	3	0	f	1
+101	0	0	Concreto	1	2	f	1
+104	0	0	Concreto	2	2	f	1
+201	0	0	Concreto	1	1	f	1
+205	0	0	Concreto	3	3	f	1
+203	0	0	Concreto	2	1	f	1
+204	0	0	Concreto	2	1	f	1
+302	0	0	Concreto	1	1	f	1
+304	0	0	Concreto	2	1	f	1
+305	0	0	Concreto	3	1	f	1
+401	0	0	Concreto	1	1	f	1
+402	0	0	Concreto	1	1	f	1
+403	0	0	Concreto	2	1	f	1
+404	0	0	Concreto	2	1	f	1
+501	0	0	Concreto	1	1	f	1
+503	0	0	Concreto	2	2	f	1
+505	0	0	Concreto	3	2	f	1
+601	0	0	Concreto	1	2	f	1
+602	0	0	Concreto	1	2	f	1
+603	0	0	Concreto	2	3	f	1
+705	0	0	Concreto	3	1	f	1
 \.
 
 

@@ -23,7 +23,7 @@ class Database:
             Database.__instance = self
             self.connection = psycopg2.connect(
                 host="localhost",
-                database="test",  # This database must be updated later
+                database="primeraprueba",  # This database must be updated later
                 user="postgres",
                 password="password")
 
@@ -87,7 +87,7 @@ class Apartment:
         print(f'[+]==== Info del apartamento: {self.numberApartment}====[+]\n\n'
               f''
               f'[+] Es Habitable: {self.isHabitability} \n'
-             #f'[+] Vecinos: {self.neighbors} \n'
+              f'[+] Vecinos: {self.neighbors} \n'
               f'[+] Humedad del aire:  {self.airHumidity} \n'
               f'[+] Temperatura ambiental: {self.ambientAirTemperature} \n'
               f'[+] Material del apartamento: {self.apartmentMaterial} \n'
@@ -150,7 +150,7 @@ class BDD:
     @staticmethod
     def loadApartments(build):
         try:
-            result = db.executeQuery("SELECT k_id_apartment, q_air_humidity, q_ambient_air_temperature, n_apartment_material, q_quantity_room, q_quantity_person, b_is_habitable FROM apartment;")
+            result = db.executeQuery("SELECT k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable FROM apartment;")
 
             for i in range(len(result)):
                 numberApartment = result[i][0]
@@ -171,14 +171,17 @@ class BDD:
 
     @staticmethod
     def loadNeighbors(build):
-        file = open("Neighbors.txt", "r")
-        content = file.readlines()
-        for line in content:
-            neighbor = line.split('\t')
-            numberApartment1 = neighbor[0]
-            numberApartment2 = neighbor[1]
-            build.addNeighbor(int(numberApartment1), int(numberApartment2))
-        file.close()
+        try:
+            result = db.executeQuery("SELECT k_apartment1, k_apartment2 FROM neighbor")
+            for i in range(len(result)):
+                numberApartment1 = result[i][0]
+                numberApartment2 = result[i][1]
+                build.addNeighbor(numberApartment1, numberApartment2)
+
+        except psycopg2.Error as e:
+            print("[BDD ldNeighbors] Error en la operación de base de datos:", e)
+            input("Press any key to continue...")
+
 
 
 class Menu:
@@ -223,6 +226,7 @@ class Menu:
         os.system("figlet \"Habitability Building\"")
         print("[1] Obtener información de un apartamento")
         print("[2] Agregar una persona a un apartamento")
+        print("[9] Salir")
 
 
         while True:
@@ -251,6 +255,7 @@ if __name__ == '__main__':
     
     
     BDD.loadApartments(building)
+    BDD.loadNeighbors(building)
     Menu.initialMenu()
 
     #    bd = Building()
