@@ -1,7 +1,9 @@
 #!/bin/python3
 
-import psycopg2, signal, os, sys, requests, time, re 
-
+import psycopg2, signal, os, sys, time
+import networkx as nx
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 
 class Database:
@@ -55,6 +57,9 @@ class Database:
 """A global instance is created to access the database"""
 db = Database.getInstance()
 
+"""A global instance is created to access the Graph"""
+G = nx.Graph()
+
 
 """Function to manage the output flow when Ctrl+C is pressed"""
 def sig_handler(sig, frame):
@@ -69,7 +74,7 @@ signal.signal(signal.SIGINT, sig_handler)
 
 class Apartment:
     def __init__(self, numberApartment, airHumidity, ambientAirTemperature, apartmentMaterial, roomQuantity,
-                 personQuantity, isHabitability):
+                 personQuantity, isHabitable):
         self.numberApartment = numberApartment
         self.airHumidity = airHumidity
         self.ambientAirTemperature = ambientAirTemperature
@@ -77,7 +82,7 @@ class Apartment:
         self.roomQuantity = roomQuantity
         self.personQuantity = personQuantity
         self.neighbors = []
-        self.isHabitability = isHabitability
+        self.isHabitable = isHabitable
 
     def addNeighbor(self, neighbor):
         if neighbor not in self.neighbors:
@@ -122,14 +127,63 @@ building = Building()
 
 class Person:
     def __init__(self, name, lastName, apartment, clothes):
-        self.work = None
         self.name = name
         self.lastName = lastName
         self.apartment = apartment
         self.clothes = clothes
         
-    def setWork(self, work):
-        self.work = work
+
+
+class Graphic:
+    
+    @staticmethod
+    def loadGraph():
+        
+        for i in building.Apartments:
+            # agrega el nodo correspondiente en el grafo
+            G.add_node(i, number=building.Apartments[i].numberApartment, isHabitable=building.Apartments[i].isHabitable)
+            
+            # itera sobre los vecinos del apartamento actual
+            for neighbor_number in building.Apartments[i].neighbors:
+                # busca el nodo correspondiente en el grafo usando su número de apartamento
+                neighbor_node = next((node for node in G.nodes() if G.nodes[node]['number'] == neighbor_number), None)
+                
+                # si se encontró el nodo, agrega la arista correspondiente
+                if neighbor_node:
+                    G.add_edge(i, neighbor_node)
+
+#        for node in G.nodes():
+#            print(G.nodes[node]['number'])
+#            print(G.nodes[node]['isHabitable'])
+#            print(G.edges(node))
+#            print("[+]")
+        Graphic.viewGraph()
+
+    def viewGraph():
+        nx.draw(G, with_labels=True)
+        plt.savefig('grafo.png')
+        os.system("kitty +kitten icat /home/d3vjh/Documents/UD/HabitabilityBuilding/grafo.png")
+        Graphic.clearGraph()
+
+    def clearGraph():
+        G.clear()
+        plt.clf()
+
+    
+
+#    G.add_nodes_from([1, 2, 3, 4])
+#    G.add_edges_from([(1, 2), (2, 3), (3, 4), (4, 1)])
+
+#    pos = nx.spring_layout(G, dim=3)
+
+ ##   fig = plt.figure()
+  #  ax = fig.add_subplot(projection='3d')
+#
+   # nx.draw_networkx_nodes(G, pos, ax=ax)
+    #nx.draw_networkx_edges(G, pos, ax=ax)
+     
+#    plt.show()
+    
 
 
 class BDD:
@@ -150,7 +204,7 @@ class BDD:
     @staticmethod
     def loadApartments(build):
         try:
-            result = db.executeQuery("SELECT k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable FROM apartment;")
+            result = db.executeQuery("SELECT k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable FROM apartment ORDER BY k_apartment;")
 
             for i in range(len(result)):
                 numberApartment = result[i][0]
@@ -181,6 +235,7 @@ class BDD:
         except psycopg2.Error as e:
             print("[BDD ldNeighbors] Error en la operación de base de datos:", e)
             input("Press any key to continue...")
+
 
 
 
@@ -217,6 +272,14 @@ class Menu:
             input("Press any key to continue...")
         Menu.initialMenu()
 
+    @staticmethod
+    def Menu_getGraph():
+        os.system("clear")
+        print("[+]===================================================================================[+]")
+        Graphic.loadGraph()
+        input("Press any key to continue...")
+        Menu.initialMenu()
+
 
         
 
@@ -226,6 +289,7 @@ class Menu:
         os.system("figlet \"Habitability Building\"")
         print("[1] Obtener información de un apartamento")
         print("[2] Agregar una persona a un apartamento")
+        print("[3] Dibujar el Grafo")
         print("[9] Salir")
 
 
@@ -236,6 +300,8 @@ class Menu:
                     Menu.Menu_getApartmentInfo()
                 elif opc == 2:
                     Menu.Menu_createPerson()
+                elif opc == 3:
+                    Menu.Menu_getGraph()
                 elif  opc == 9:
                     sys.exit(0)
             except ValueError:
@@ -251,9 +317,9 @@ class Menu:
 
 
 if __name__ == '__main__':
-     
     
     
+
     BDD.loadApartments(building)
     BDD.loadNeighbors(building)
     Menu.initialMenu()
