@@ -91,7 +91,7 @@ class Apartment:
     def getInfo(self):
         print(f'[+]==== Info del apartamento: {self.numberApartment}====[+]\n\n'
               f''
-              f'[+] Es Habitable: {self.isHabitability} \n'
+              f'[+] Es Habitable: {self.isHabitable} \n'
               f'[+] Vecinos: {self.neighbors} \n'
               f'[+] Humedad del aire:  {self.airHumidity} \n'
               f'[+] Temperatura ambiental: {self.ambientAirTemperature} \n'
@@ -160,8 +160,10 @@ class Graphic:
         Graphic.viewGraph()
 
     def viewGraph():
-        nx.draw(G, with_labels=True)
-        plt.savefig('grafo.png')
+        node_colors = ['green' if G.nodes[node]['isHabitable'] else 'red' for node in G.nodes()]
+        pos = nx.spectral_layout(G)
+        nx.draw(G, pos = pos, edge_color = 'white', with_labels=True, node_color=node_colors)
+        plt.savefig('grafo.png', facecolor='#1A1B26')
         os.system("kitty +kitten icat /home/d3vjh/Documents/UD/HabitabilityBuilding/grafo.png")
         Graphic.clearGraph()
 
@@ -275,7 +277,7 @@ class Menu:
     @staticmethod
     def Menu_getGraph():
         os.system("clear")
-        print("[+]===================================================================================[+]")
+#        BDD.loadApartments(building)
         Graphic.loadGraph()
         input("Press any key to continue...")
         Menu.initialMenu()

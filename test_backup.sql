@@ -85,7 +85,6 @@ ALTER TABLE public.person OWNER TO postgres;
 
 COPY public.apartment (k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable, k_building) FROM stdin;
 102	0	0	Concreto	1	0	f	1
-103	0	0	Concreto	2	0	f	1
 105	0	0	Concreto	3	0	f	1
 202	0	0	Concreto	1	0	f	1
 301	0	0	Concreto	1	0	f	1
@@ -119,6 +118,7 @@ COPY public.apartment (k_apartment, q_air_humidity, q_ambient_air_humidity, s_ap
 602	0	0	Concreto	1	2	f	1
 603	0	0	Concreto	2	3	f	1
 705	0	0	Concreto	3	1	f	1
+103	0	0	Concreto	2	0	t	1
 \.
 
 
