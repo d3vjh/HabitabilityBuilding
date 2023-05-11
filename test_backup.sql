@@ -25,84 +25,40 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public.apartment (
-    k_id_apartment integer NOT NULL,
-    k_id_building integer,
-    q_air_humidity integer,
-    q_ambient_air_temperature integer,
-    n_apartment_material character varying(30),
-    q_quantity_room integer,
-    q_quantity_person integer,
-    b_is_habitable boolean
+    k_apartment integer NOT NULL,
+    q_air_humidity integer NOT NULL,
+    q_ambient_air_humidity integer NOT NULL,
+    s_apartment_material character varying(50) NOT NULL,
+    q_number_of_bedrooms integer NOT NULL,
+    q_number_of_occupants integer NOT NULL,
+    b_is_habitable boolean NOT NULL,
+    k_building integer NOT NULL,
+    CONSTRAINT ck_id_building CHECK ((k_building = 1))
 );
 
 
 ALTER TABLE public.apartment OWNER TO postgres;
 
 --
--- Name: apartment_k_id_apartment_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.apartment_k_id_apartment_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.apartment_k_id_apartment_seq OWNER TO postgres;
-
---
--- Name: apartment_k_id_apartment_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.apartment_k_id_apartment_seq OWNED BY public.apartment.k_id_apartment;
-
-
---
 -- Name: building; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.building (
-    k_id_building integer NOT NULL,
-    n_namebuilding character varying(30),
-    q_radiaton numeric(4,1),
-    n_ubication character varying(30)
+    k_building integer NOT NULL,
+    q_radiaton_level character varying(50) NOT NULL,
+    CONSTRAINT chk_building CHECK ((k_building = 1))
 );
 
 
 ALTER TABLE public.building OWNER TO postgres;
 
 --
--- Name: building_k_id_building_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.building_k_id_building_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.building_k_id_building_seq OWNER TO postgres;
-
---
--- Name: building_k_id_building_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.building_k_id_building_seq OWNED BY public.building.k_id_building;
-
-
---
 -- Name: neighbor; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.neighbor (
-    k_id_apartment1 integer NOT NULL,
-    k_id_apartment2 integer NOT NULL
+    k_apartment1 integer NOT NULL,
+    k_apartment2 integer NOT NULL
 );
 
 
@@ -113,100 +69,56 @@ ALTER TABLE public.neighbor OWNER TO postgres;
 --
 
 CREATE TABLE public.person (
-    k_id_person integer NOT NULL,
-    k_id_apartment integer NOT NULL,
-    n_name_person character varying(50),
-    n_lastname_person character varying(50),
-    n_person_clothing character varying(150),
-    q_work character varying(50)
+    k_person integer NOT NULL,
+    s_name character varying(50) NOT NULL,
+    s_last_name character varying(50) NOT NULL,
+    s_clothing_type character varying(50) NOT NULL,
+    k_apartment integer NOT NULL
 );
 
 
 ALTER TABLE public.person OWNER TO postgres;
 
 --
--- Name: person_k_id_person_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.person_k_id_person_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.person_k_id_person_seq OWNER TO postgres;
-
---
--- Name: person_k_id_person_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.person_k_id_person_seq OWNED BY public.person.k_id_person;
-
-
---
--- Name: apartment k_id_apartment; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.apartment ALTER COLUMN k_id_apartment SET DEFAULT nextval('public.apartment_k_id_apartment_seq'::regclass);
-
-
---
--- Name: building k_id_building; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.building ALTER COLUMN k_id_building SET DEFAULT nextval('public.building_k_id_building_seq'::regclass);
-
-
---
--- Name: person k_id_person; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.person ALTER COLUMN k_id_person SET DEFAULT nextval('public.person_k_id_person_seq'::regclass);
-
-
---
 -- Data for Name: apartment; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.apartment (k_id_apartment, k_id_building, q_air_humidity, q_ambient_air_temperature, n_apartment_material, q_quantity_room, q_quantity_person, b_is_habitable) FROM stdin;
-101	1	\N	\N	Concreto	\N	\N	\N
-102	1	\N	\N	Concreto	\N	\N	\N
-103	1	\N	\N	Concreto	\N	\N	\N
-104	1	\N	\N	Concreto	\N	\N	\N
-105	1	\N	\N	Concreto	\N	\N	\N
-201	1	\N	\N	Concreto	\N	\N	\N
-202	1	\N	\N	Concreto	\N	\N	\N
-203	1	\N	\N	Concreto	\N	\N	\N
-204	1	\N	\N	Concreto	\N	\N	\N
-205	1	\N	\N	Concreto	\N	\N	\N
-301	1	\N	\N	Concreto	\N	\N	\N
-302	1	\N	\N	Concreto	\N	\N	\N
-303	1	\N	\N	Concreto	\N	\N	\N
-304	1	\N	\N	Concreto	\N	\N	\N
-305	1	\N	\N	Concreto	\N	\N	\N
-401	1	\N	\N	Concreto	\N	\N	\N
-402	1	\N	\N	Concreto	\N	\N	\N
-403	1	\N	\N	Concreto	\N	\N	\N
-404	1	\N	\N	Concreto	\N	\N	\N
-405	1	\N	\N	Concreto	\N	\N	\N
-501	1	\N	\N	Concreto	\N	\N	\N
-502	1	\N	\N	Concreto	\N	\N	\N
-503	1	\N	\N	Concreto	\N	\N	\N
-504	1	\N	\N	Concreto	\N	\N	\N
-505	1	\N	\N	Concreto	\N	\N	\N
-601	1	\N	\N	Concreto	\N	\N	\N
-602	1	\N	\N	Concreto	\N	\N	\N
-603	1	\N	\N	Concreto	\N	\N	\N
-604	1	\N	\N	Concreto	\N	\N	\N
-605	1	\N	\N	Concreto	\N	\N	\N
-701	1	\N	\N	Concreto	\N	\N	\N
-702	1	\N	\N	Concreto	\N	\N	\N
-703	1	\N	\N	Concreto	\N	\N	\N
-704	1	\N	\N	Concreto	\N	\N	\N
-705	1	\N	\N	Concreto	\N	\N	\N
+COPY public.apartment (k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable, k_building) FROM stdin;
+101	0	0	Concreto	1	0	f	1
+102	0	0	Concreto	1	0	f	1
+103	0	0	Concreto	2	0	f	1
+104	0	0	Concreto	2	0	f	1
+105	0	0	Concreto	3	0	f	1
+201	0	0	Concreto	1	0	f	1
+202	0	0	Concreto	1	0	f	1
+203	0	0	Concreto	2	0	f	1
+204	0	0	Concreto	2	0	f	1
+205	0	0	Concreto	3	0	f	1
+301	0	0	Concreto	1	0	f	1
+302	0	0	Concreto	1	0	f	1
+303	0	0	Concreto	2	0	f	1
+304	0	0	Concreto	2	0	f	1
+305	0	0	Concreto	3	0	f	1
+401	0	0	Concreto	1	0	f	1
+402	0	0	Concreto	1	0	f	1
+403	0	0	Concreto	2	0	f	1
+404	0	0	Concreto	2	0	f	1
+405	0	0	Concreto	3	0	f	1
+501	0	0	Concreto	1	0	f	1
+502	0	0	Concreto	1	0	f	1
+503	0	0	Concreto	2	0	f	1
+504	0	0	Concreto	2	0	f	1
+505	0	0	Concreto	3	0	f	1
+601	0	0	Concreto	1	0	f	1
+602	0	0	Concreto	1	0	f	1
+603	0	0	Concreto	2	0	f	1
+604	0	0	Concreto	2	0	f	1
+605	0	0	Concreto	3	0	f	1
+701	0	0	Concreto	1	0	f	1
+702	0	0	Concreto	1	0	f	1
+703	0	0	Concreto	2	0	f	1
+704	0	0	Concreto	2	0	f	1
+705	0	0	Concreto	3	0	f	1
 \.
 
 
@@ -214,8 +126,8 @@ COPY public.apartment (k_id_apartment, k_id_building, q_air_humidity, q_ambient_
 -- Data for Name: building; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.building (k_id_building, n_namebuilding, q_radiaton, n_ubication) FROM stdin;
-1	Edificio Sede Ingeniería	20.2	Calle 12 N 3 F 32
+COPY public.building (k_building, q_radiaton_level) FROM stdin;
+1	radiaton
 \.
 
 
@@ -223,7 +135,65 @@ COPY public.building (k_id_building, n_namebuilding, q_radiaton, n_ubication) FR
 -- Data for Name: neighbor; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.neighbor (k_id_apartment1, k_id_apartment2) FROM stdin;
+COPY public.neighbor (k_apartment1, k_apartment2) FROM stdin;
+101	102
+101	201
+102	103
+102	202
+103	104
+103	203
+104	105
+104	204
+105	205
+201	202
+201	301
+202	203
+202	302
+203	204
+203	303
+204	205
+204	304
+205	305
+301	302
+301	401
+302	303
+302	402
+303	304
+303	403
+304	305
+304	404
+305	405
+401	402
+401	501
+402	403
+402	502
+403	404
+403	503
+404	405
+404	504
+405	505
+501	502
+501	601
+502	503
+502	602
+503	504
+503	603
+504	505
+504	604
+505	605
+601	602
+601	701
+602	603
+602	702
+603	604
+603	703
+604	605
+604	704
+605	705
+701	702
+702	703
+703	704
+704	705
 \.
 
 
@@ -231,98 +201,94 @@ COPY public.neighbor (k_id_apartment1, k_id_apartment2) FROM stdin;
 -- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.person (k_id_person, k_id_apartment, n_name_person, n_lastname_person, n_person_clothing, q_work) FROM stdin;
-1	101	Jhonatan	Moreno	\N	\N
-6	101	David	Barragan	\N	\N
-12	102	Carlos	Pedraza	\N	\N
-13	104	Maria	Gonzales	\N	\N
-14	105	Carmenza	Mora	\N	\N
+COPY public.person (k_person, s_name, s_last_name, s_clothing_type, k_apartment) FROM stdin;
+100030222	Sebastian	Gonzalez	Desnudo	601
+100030891	Jhonatan	Alvarez	Desnudo	603
+100008823	Catalina	Moreno	Desnudo	402
+100006930	Laura	Diaz	Desnudo	104
+100008607	Catalina	Sanchez	Desnudo	104
+100011245	Emmanuel	Garcia	Desnudo	503
+100019408	Sebastian	Gonzalez	Desnudo	601
+100014941	Hanna	Moreno	Desnudo	603
+100014935	Juan	Hernandez	Desnudo	201
+100022955	Felipe	Alvarez	Desnudo	401
+100030612	Catalina	Rodriguez	Desnudo	404
+100002315	Maria	Alvarez	Desnudo	504
+100030982	Carlos	Moreno	Desnudo	205
+100015328	Juan	Alvarez	Desnudo	705
+100006548	Felipe	Sanchez	Desnudo	205
+100027475	Carlos	Diaz	Desnudo	602
+100026515	Jhonatan	Hernandez	Desnudo	203
+100022843	Felipe	Sanchez	Desnudo	305
+100008047	Laura	Sanchez	Desnudo	603
+100019502	Jhonatan	Sanchez	Desnudo	501
+100007289	Maria	Gonzalez	Desnudo	101
+100030886	Ana	Rodriguez	Desnudo	302
+100000791	Ana	Hernandez	Desnudo	204
+100010875	Jhonatan	Jimenez	Desnudo	602
+100018704	Sergio	Jimenez	Desnudo	205
+100010158	Santiago	Sanchez	Desnudo	503
+100024728	Luis	Alvarez	Desnudo	304
+100001291	Luis	Alvarez	Desnudo	403
+100011303	Jhonatan	Gonzalez	Desnudo	504
+100015945	Laura	Sanchez	Desnudo	101
 \.
 
 
 --
--- Name: apartment_k_id_apartment_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.apartment_k_id_apartment_seq', 1, false);
-
-
---
--- Name: building_k_id_building_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.building_k_id_building_seq', 1, false);
-
-
---
--- Name: person_k_id_person_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.person_k_id_person_seq', 14, true);
-
-
---
--- Name: apartment apartments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: apartment pk_apartment; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.apartment
-    ADD CONSTRAINT apartments_pkey PRIMARY KEY (k_id_apartment);
+    ADD CONSTRAINT pk_apartment PRIMARY KEY (k_apartment);
 
 
 --
--- Name: building building_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: building pk_building; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.building
-    ADD CONSTRAINT building_pkey PRIMARY KEY (k_id_building);
+    ADD CONSTRAINT pk_building PRIMARY KEY (k_building);
 
 
 --
--- Name: neighbor neighbors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.neighbor
-    ADD CONSTRAINT neighbors_pkey PRIMARY KEY (k_id_apartment1, k_id_apartment2);
-
-
---
--- Name: person person_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Name: person pk_person; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.person
-    ADD CONSTRAINT person_pkey PRIMARY KEY (k_id_person);
+    ADD CONSTRAINT pk_person PRIMARY KEY (k_person);
 
 
 --
--- Name: apartment apartments_k_id_building_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: apartment fk_apartment_building; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.apartment
-    ADD CONSTRAINT apartments_k_id_building_fkey FOREIGN KEY (k_id_building) REFERENCES public.building(k_id_building);
+    ADD CONSTRAINT fk_apartment_building FOREIGN KEY (k_building) REFERENCES public.building(k_building);
 
 
 --
--- Name: neighbor neighbors_k_id_apartment1_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.neighbor
-    ADD CONSTRAINT neighbors_k_id_apartment1_fkey FOREIGN KEY (k_id_apartment1) REFERENCES public.apartment(k_id_apartment);
-
-
---
--- Name: neighbor neighbors_k_id_apartment2_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: neighbor fk_neighbor_apartment; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.neighbor
-    ADD CONSTRAINT neighbors_k_id_apartment2_fkey FOREIGN KEY (k_id_apartment2) REFERENCES public.apartment(k_id_apartment);
+    ADD CONSTRAINT fk_neighbor_apartment FOREIGN KEY (k_apartment1) REFERENCES public.apartment(k_apartment);
 
 
 --
--- Name: person person_k_idapartment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: neighbor fk_neighbor_apartment_02; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.neighbor
+    ADD CONSTRAINT fk_neighbor_apartment_02 FOREIGN KEY (k_apartment2) REFERENCES public.apartment(k_apartment);
+
+
+--
+-- Name: person fk_person_apartment; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.person
-    ADD CONSTRAINT person_k_idapartment_fkey FOREIGN KEY (k_id_apartment) REFERENCES public.apartment(k_id_apartment);
+    ADD CONSTRAINT fk_person_apartment FOREIGN KEY (k_apartment) REFERENCES public.apartment(k_apartment);
 
 
 --
