@@ -1,26 +1,26 @@
 import math as m
-import HabitabilityBuilding as hb
 
-class Apartament:
-    Text = 17  # 15-25
-    Clo = 0.1  # Ropa 0-1.5
-    Npersonas = 1  # 1-4
-    Radiacion = 4033.3  # 4000-4400
-    HumedadAir = 20  # 20-80%
-    #constantes
+class Edificio:
+    # constantes
     conductividad = 1.7  # Conductividad térmica hormigon
     grosor = 0.1  # Grosor hormigon
-
-    def __init__(self, Text, Clo, Npersonas, Radiacion, conductividad, grosor, HumedadAir):
-        self.Text = Text
-        self.Clo = Clo
-        self.Npersonas = Npersonas
+    
+    def __init__(self, Text=None,Radiacion=None,HumedadAir=None):
+        self.Text= Text
         self.Radiacion = Radiacion
-        self.conductividad = conductividad
-        self.grosor = grosor
         self.HumedadAir = HumedadAir
 
-    def Sedificio():
+        if Text is None and Radiacion is None and HumedadAir is None:
+            self.Constructor2()
+
+    #Condiciones Edificio de bogota
+    def Constructor2(self):
+        self.Text = 17  # 15-25
+        self.Radiacion = 4033.3  # 4000-4400
+        self.HumedadAir = 70  # 20-80%
+    
+    @property
+    def Sapartament(self):
         pisos = 7
         apartamentos = 5
         lado = 44
@@ -28,63 +28,104 @@ class Apartament:
         apotema = 37.42
         # area prisma pentagonal
         Sedificio = 5*lado*(alto + (5/4)*apotema)
-        return Sedificio/(pisos*apartamentos)  # m^2
-
-    def U():
+        return round(Sedificio/(pisos*apartamentos),3)  # m^2
+    
+    @property
+    def U(self):
         # coeficiente de transmisión térmica
-        return conductividad / grosor
+        return self.conductividad / self.grosor
 
-    def QTotal():
-        Tpiel = 33  # 33-37
+class Apartament():
+    def __init__(self,Edificio,Clo=None, Npersonas=None, Activity=None):
+        self.Edificio = Edificio
+        self.Clo = Clo
+        self.Npersonas = Npersonas
+        self.Activity = Activity
+
+        if Clo is None and Npersonas is None and Activity is None:
+            self.Constructor2()
+
+    #Condiciones Edificio de bogota
+    def Constructor2(self):
+        self.Clo = 1  # Ropa 0.1-1
+        self.Npersonas = 1  # 1-4
+        self.Activity = "ligera"
+
+    def QTotal(self):
+        Tactivity = {
+            "reposo": 36,
+            "ligera": 37,
+            "moderada": 38,
+            "intensa": 39
+        }
+        Tpiel = Tactivity[self.Activity]
         Spersona = 1.8
-        n = 0.3  # eficiencia de absorción hormigon
+        n = 0.3  # eficiencia de absorción hormigon 0.2-0.4, cambia al pintar
 
         # fórmula del índice de vestimenta
-        Icl = 0.155 * Clo ^ 0.425 * (1.0 / (1.0 + 0.09115 * m.sqrt(Spersona)))
+        if self.Clo < 0.1:
+            self.Clo = 0.1  # valor minimo
+        Icl = 0.155 * self.Clo ** 0.425 * \
+            (1.0 / (1.0 + 0.09115 * m.sqrt(Spersona)))
         # convierto W
-        TempPerson = ((Tpiel-Text) / Icl)*Npersonas
+        TempPerson = ((Tpiel-self.Edificio.Text) / Icl)*self.Npersonas
 
         # calor debidas a la radiación solar
-        TempRadiacion = (Sapartament * Radiacion * n)/24
+        TempRadiacion = (self.Edificio.Sapartament * self.Edificio.Radiacion * n)/24
 
         # calor total
         return TempPerson + TempRadiacion
 
-    def TempApartament():
-        Sapartament = Sedificio()
+    @property
+    def TempApartament(self):
         # transferencia de calor
-        return Text + (QTotal() / (Sapartament * U()))
-
-
-
-class Habitable (Apartament):
-
-    def TransferenciaTemp():
-        Spared=[51,34.5]#17x3 11.5x3  
-        Stecho=[357,391,483]#17x21  17x23  21x23
-
-#Rellenar switch 101...705 con:
-        Stotal= Spared[0]+Stecho[0]*2 #pequeño apartament 201
-        Stotal= Spared[0]+Spared[1]+Stecho[1]*2 #mediano apartament 202
-        Stotal= Spared[1]*2+Stecho[2]*2 #grande apartament 203
-
-
-        Stotal= Spared[0]+Stecho[0] #pequeño apartament 101
-        Stotal= Spared[0]+Spared[1]+Stecho[1]#mediano apartament 102
-        Stotal= Spared[1]*2+Stecho[2] #grande apartament 103
-
-        #  ley de Fourier del calor
-        return conductividad *Stotal*(TempApartament()-TempApartament())/grosor
-
+        return round(self.Edificio.Text + (self.QTotal() / (self.Edificio.Sapartament * self.Edificio.U)), 3)
     
-    def Habitable():
-        if HumedadAir >= 20 and HumedadAir <= 80:
-            if TempApartament() >= 18.9 and TempApartament() <= 26.1:
-                return True
-            else:
-                return False
+   
+    def Habitable(self):
+        self.Edificio.HumedadAir = round(self.Edificio.HumedadAir/10)*10
+        TempApartament = self.TempApartament
+        print("La temperatura del apartamento es: ",TempApartament, "°C")
+        Thumedad = {
+            0: [25, 28],
+            10: [24, 27],
+            20: [20, 24],
+            30: [19, 23],
+            40: [18, 22],
+            50: [17, 21],
+            60: [16, 20],
+            70: [15, 19],
+            80: [14, 18],
+            90: [13, 17],
+            100: [12, 16]
+        }
+        Tmin = Thumedad[self.Edificio.HumedadAir][0]
+        Tmax = Thumedad[self.Edificio.HumedadAir][1]
+
+        if self.Edificio.HumedadAir < 20:
+            print("la humedad en el aire es muy baja, mantente hidratado")
+        elif self.Edificio.HumedadAir > 80:
+            print("la humedad en el aire es muy alta, cuidate del moho")
+
+        if Tmin <= self.TempApartament <= Tmax:
+            return True
         else:
+            if TempApartament > Tmax:
+                if ((TempApartament - Tmax) <= 1):
+                    print("baja la temperatura, pintando de blanco")
+                else:
+                    print("compra aire acondicionado")
+            if TempApartament < Tmin:
+                if TempApartament-Tmin >= -1:
+                    print("sube la temperatura, pintando de negro")
+                else:
+                    print("compra calentador")
             return False
 
-    if __name__ == '__main__':
-        print("La temperatura del apartamento es: ", TempApartament(), "°C")
+class main:
+    def T
+if __name__ == '__main__':
+    e=Edificio()
+    apt101 = Apartament(e,1, 1,"reposo")
+    print("El apartamento es habitable: ", apt101.Habitable())
+
