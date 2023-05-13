@@ -25,9 +25,9 @@ class Database:
             Database.__instance = self
             self.connection = psycopg2.connect(
                 host="localhost",
-                database="primeraprueba",  # This database must be updated later
-                user="postgres",
-                password="password")
+                database="habitable",  # This database must be updated later
+                user="root",
+                password="ballena12")
 
     def executeQuery(self, query, args=None):
         """Method to execute a query on the database."""
@@ -319,9 +319,6 @@ class Menu:
 
 
 if __name__ == '__main__':
-    
-    
-
     BDD.loadApartments(building)
     BDD.loadNeighbors(building)
     Menu.initialMenu()
