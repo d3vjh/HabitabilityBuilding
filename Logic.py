@@ -179,4 +179,5 @@ if __name__ == '__main__':
         vecinos = bd.building.Apartments[apartamento].neighbors
         Q_new=e.TransferenciaTemp(apartamento, vecinos,
                             apt101.TempApartament, apt201.TempApartament)
+        print(Q_new)
         
