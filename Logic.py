@@ -4,21 +4,20 @@ import HabitabilityBuilding as bd
 
 class Edificio:
     # constantes
+    Radiacion = 4033.3  # 4000-4400 en bogota
     conductividad = 1.7  # Conductividad térmica hormigon
     grosor = 0.1  # Grosor hormigon
 
-    def __init__(self, Text=None, Radiacion=None, HumedadAir=None):
+    def __init__(self, Text=None, HumedadAir=None):
         self.Text = Text
-        self.Radiacion = Radiacion
         self.HumedadAir = HumedadAir
 
-        if Text is None and Radiacion is None and HumedadAir is None:
+        if Text is None and HumedadAir is None:
             self.Constructor2()
 
     # Condiciones Edificio de bogota
     def Constructor2(self):
         self.Text = 17  # 15-25
-        self.Radiacion = 4033.3  # 4000-4400
         self.HumedadAir = 70  # 20-80%
 
     @property
@@ -37,7 +36,7 @@ class Edificio:
         # coeficiente de transmisión térmica
         return self.conductividad / self.grosor
 
-    def TransferenciaTemp(self, apartamento, vecinos, Tapartament, Tvecino):
+    def TransferenciaTemp(self, apartamento, vecinos, Tapartament, Tvecinos):
 
         ziseApartamento = int(str(apartamento)[-1])
         if ziseApartamento == 1 or ziseApartamento == 5:
@@ -56,6 +55,7 @@ class Edificio:
         }
 
         Q = []
+        i=0
         for vecino in vecinos:
 
             Pvecino = int(str(vecino)[0])
@@ -68,14 +68,15 @@ class Edificio:
 
             Stotal = Scontacto[size][posicion]
             #  ley de Fourier del calor
-            Q.append(round(self.conductividad * Stotal *
-                     (Tapartament-Tvecino)/self.grosor, 1))
+            Q.append(round(self.conductividad * Stotal *(Tapartament-Tvecinos[i])/self.grosor, 1))
+            i=i+1
 
         return Q
         
 
 
 class Apartament():
+    Qnew=0
     def __init__(self, Edificio, Clo=None, Npersonas=None, Activity=None):
         self.Edificio = Edificio
         self.Clo = Clo
@@ -116,15 +117,22 @@ class Apartament():
 
         # calor total
         return TempPerson + TempRadiacion
-
+    
     @property
     def TempApartament(self):
         # transferencia de calor
-        return round(self.Edificio.Text + (self.QTotal() / (self.Edificio.Sapartament * self.Edificio.U)), 3)
-
+        return round(self.Edificio.Text + (self.QTotal()/ (self.Edificio.Sapartament * self.Edificio.U)), 3)
+    
+    def QTransferencia(self):
+        return self.QTotal()+self.Qnew
+    
+    def TempTotal(self):
+        # transferencia de calor
+        return round(self.Edificio.Text + (self.QTransferencia()/ (self.Edificio.Sapartament * self.Edificio.U)), 3)
+        
     def Habitable(self):
         self.Edificio.HumedadAir = round(self.Edificio.HumedadAir/10)*10
-        TempApartament = self.TempApartament
+        TempApartament = self.TempTotal()
         print("La temperatura del apartamento es: ", TempApartament, "°C")
         Thumedad = {
             0: [25, 28],
@@ -164,20 +172,48 @@ class Apartament():
 
 
 if __name__ == '__main__':
-    e = Edificio()
-    apt101 = Apartament(e, 0.1, 1, "reposo") #actual
+
+    e=Edificio()
+    apt101 = Apartament(e, 0.1, 1, "reposo")
     apt201 = Apartament(e, 1, 1, "reposo")
-    # print("El apartamento es habitable: ", apt101.Habitable())
-    # print("El apartamento es habitable: ", apt102.Habitable())
+    apt102=Apartament(e, 1, 2, "reposo")
+
+    Q=e.TransferenciaTemp(101,[102,201],apt101.TempApartament,[apt102.TempApartament,apt201.TempApartament])
+    apt101.Qnew=-(sum(Q))
+    apt102.Qnew=Q[0]
+    apt201.Qnew=Q[1]
+
+    apt101.Habitable()
+
+
+"""    #Una vez funcione db
 
     bd.BDD.loadApartments(bd.building)
     bd.BDD.loadNeighbors(bd.building)
 
     info_Apartamentos = bd.building.Apartments
+    colpatria = Edificio(info_Apartamentos[101].ambientAirTemperature, info_Apartamentos[101].airHumidity)
+
     Apartamentos = list(set(info_Apartamentos.keys()))
+    apt={}
+    for apartamento in Apartamentos: #creo objeto por cada apartamento
+        apt[apartamento]=Apartament(colpatria,info_Apartamentos[apartamento].personClothing,[apartamento],info_Apartamentos[apartamento].personClothing, "reposo")
+
+    Q={}
     for apartamento in Apartamentos:
-        vecinos = bd.building.Apartments[apartamento].neighbors
-        Q_new=e.TransferenciaTemp(apartamento, vecinos,
-                            apt101.TempApartament, apt201.TempApartament)
-        print(Q_new)
+        vecinos = info_Apartamentos[apartamento].neighbors
+        for i in range(len(vecinos)):
+            Tvecinos= apt[vecinos[i]].TempApartament
+
+        Q[apartamento]=colpatria.TransferenciaTemp(apartamento, vecinos,apt[apartamento].TempApartament, Tvecinos)
+        apt[apartamento].Qnew=-(sum(Q[apartamento]))
+        for i in range(len(vecinos)):
+            apt[vecinos[i]].Qnew=Q[apartamento][i]
+
+    for apartamento in Apartamentos:
+        apt[apartamento].Habitable()
+        
+"""
+
+        
         
