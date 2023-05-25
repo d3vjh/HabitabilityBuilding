@@ -170,20 +170,20 @@ class Apartament():
                     print("compra calentador")
             return False
 
+class Main():
+    if __name__ == '__main__':
 
-if __name__ == '__main__':
+        e=Edificio()
+        apt101 = Apartament(e, 0.1, 1, "reposo")
+        apt201 = Apartament(e, 1, 1, "reposo")
+        apt102=Apartament(e, 1, 2, "reposo")
 
-    e=Edificio()
-    apt101 = Apartament(e, 0.1, 1, "reposo")
-    apt201 = Apartament(e, 1, 1, "reposo")
-    apt102=Apartament(e, 1, 2, "reposo")
+        Q=e.TransferenciaTemp(101,[102,201],apt101.TempApartament,[apt102.TempApartament,apt201.TempApartament])
+        apt101.Qnew=-(sum(Q))
+        apt102.Qnew=Q[0]
+        apt201.Qnew=Q[1]
 
-    Q=e.TransferenciaTemp(101,[102,201],apt101.TempApartament,[apt102.TempApartament,apt201.TempApartament])
-    apt101.Qnew=-(sum(Q))
-    apt102.Qnew=Q[0]
-    apt201.Qnew=Q[1]
-
-    apt101.Habitable()
+        apt101.Habitable()
 
 
 """    #Una vez funcione db
