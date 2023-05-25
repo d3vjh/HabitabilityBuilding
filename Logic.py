@@ -8,11 +8,11 @@ class Edificio:
     conductividad = 1.7  # Conductividad térmica hormigon
     grosor = 0.1  # Grosor hormigon
 
-    def __init__(self, Text=None, HumedadAir=None):
-        self.Text = Text
+    def __init__(self, Texterior=None, HumedadAir=None):
+        self.Text = Texterior
         self.HumedadAir = HumedadAir
 
-        if Text is None and HumedadAir is None:
+        if Texterior is None and HumedadAir is None:
             self.Constructor2()
 
     # Condiciones Edificio de bogota
