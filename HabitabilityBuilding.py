@@ -189,12 +189,14 @@ class Graphic:
         
         for i in building.Apartments:
             # agrega el nodo correspondiente en el grafo
-            G.add_node(i, number=building.Apartments[i].k_apartment, b_is_habitable=building.Apartments[i].b_is_habitable)
+            apt = building.getApartment(i)
+            
+            G.add_node(i, number=apt.k_apartment, b_is_habitable=apt.b_is_habitable)
             
             # itera sobre los vecinos del apartamento actual
-            for neighbor_number in building.Apartments[i].neighbors:
+            for neighbor_number in building.Apartments[apt.k_apartment].neighbors:
                 # busca el nodo correspondiente en el grafo usando su número de apartamento
-                neighbor_node = next((node for node in G.nodes() if G.nodes[node]['number'] == neighbor_number), None)
+                neighbor_node = next((node for node in G.nodes() if G.nodes[node]['number'] == neighbor_number.k_apartment), None)
                 
                 # si se encontró el nodo, agrega la arista correspondiente
                 if neighbor_node:
