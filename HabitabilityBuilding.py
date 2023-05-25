@@ -86,7 +86,7 @@ class Apartment:
         self.neighbors = []
         self.residents = []
         self.b_is_habitable = b_is_habitable
-        self.q_temperature_apartment = 0
+        self.q_temperature = 0 # Toca modificarlo, pero inicialmente vale 0
 
     def addNeighbor(self, neighbor):
         if neighbor not in self.neighbors:
@@ -105,7 +105,7 @@ class Apartment:
               f'[+] Vecinos: \n')
         for neighbor in self.neighbors:
             print(f'\t[-] Número: {neighbor.k_apartment}\n'
-                  f'\t[-] Temp: {neighbor.q_temperature_apartment}')
+                  f'\t[-] Temp: {neighbor.q_temperature}')
 
         print(f'\n[+] Humedad del aire:  {self.q_air_humidity} \n'
               f'[+] Material del apartamento: {self.s_apartment_material} \n'
@@ -119,6 +119,15 @@ class Apartment:
                   f'\t[-] Ropa: {person.s_clothing_type}\n'
                   f'\t[-] Actividad: {person.s_activity}\n')
 
+        def getPerson(self, k_person):
+            for person in self.residents:
+                if person.k_person == k_person:
+                    return person
+                else:
+                    return None;
+                    
+
+
 
 class Building:
 
@@ -127,9 +136,12 @@ class Building:
     def __init__(self):
         self.Apartments = {}
         # Condiciones para un edicifio en Bogotá
-   #     self.Text = 17 # 15-25
-    #    self.HumedadAir = 70 # 20-80%
-
+        self.temp_exterior = 17 # 15-25
+        self.q_air_humidity = 70 # 20-80%
+        self.q_radiaton = 4033.3  # 4000-4400 en bogota
+        self.q_conductividad = 1.7  # Conductividad térmica hormigon
+        self.grosor = 0.1  # Grosor hormigon
+        self.superficie_Edificio = 312.871 # m^2
 
 
 
@@ -167,7 +179,7 @@ class Person:
         self.s_clothing_type = s_clothing_type
         self.k_apartment = k_apartment
         self.s_activity = s_activity
-        
+
 
 
 class Graphic:
@@ -339,6 +351,37 @@ class BDD:
 class Menu:
 
     @staticmethod
+    def Menu_updatePerson():
+        os.system("clear")
+        k_apartment = int(input("[+] Ingrese el número del apartamento en el que está: "))
+        lista = []
+        while k_apartment not in building.Apartments:
+            k_apartment = int(input("[!] El número de apartamento no existe, porfavor verifique de nuevo: "))
+        
+        for person in building.Apartments[k_apartment].residents:
+            print(f'\t[-] Id: {person.k_person} \n'
+                  f'\t[-] Nombre: {person.s_name}\n'
+                  f'\t[-] Apellido: {person.s_last_name}\n'
+                  f'\t[-] Ropa: {person.s_clothing_type}\n'
+                  f'\t[-] Actividad: {person.s_activity}\n')
+            lista.append(person.k_person)
+
+        print(lista)
+
+        k_person = int(input("[+] Ingrese el número de identificación de la persona: "))
+
+        while k_person not in lista:    
+            k_person = input("[+] Numero de identificación no encontrado, porfavor verifique de nuevo: ")
+
+        
+        person = building.Apartments[k_apartment].getPerson(k_person)
+        print(person.s_name)
+        
+
+
+
+
+    @staticmethod
     def Menu_createPerson():
         os.system("clear")
     
@@ -424,7 +467,8 @@ class Menu:
         os.system("figlet \"Habitability Building\"")
         print("[1] Obtener información de un apartamento")
         print("[2] Agregar una persona a un apartamento")
-        print("[3] Dibujar el Grafo")
+        print("[3] Actualizar una persona de un apartamento")
+        print("[4] Dibujar el Grafo")
         print("[9] Salir")
 
 
@@ -436,6 +480,8 @@ class Menu:
                 elif opc == 2:
                     Menu.Menu_createPerson()
                 elif opc == 3:
+                    Menu.Menu_updatePerson()
+                elif opc == 4:
                     Menu.Menu_getGraph()
                 elif  opc == 9:
                     sys.exit(0)
@@ -456,35 +502,66 @@ class Logic():
     def run():
         self.TransferenciaTemperatura()
 
-    def TempApartment(k_apartment):
-        
+    @staticmethod
+    def QTotal(k_apartment):
+                
+        apt = building.Apartments[k_apartment]
+
         Tactivity = {
-            "reposo": 36,
-            "ligera": 37,
-            "moderada": 38,
-            "intensa": 39
+            "Reposo": 36,
+            "Ligera": 37,
+            "Moderada": 38,
+            "Intensa": 39
         }
         
-        Tpiel = Tactivity[self.Activity]
-        Spersona = 1.8
-        n = 0.3  # eficiencia de absorción hormigon 0.2-0.4, cambia al pintar
+        temperatura = 0
+
+        for resident in apt.residents:
+
+            Tpiel = Tactivity[resident.s_activity]
+            Spersona = 1.8
+            n = 0.3  # eficiencia de absorción hormigon 0.2-0.4, cambia al pintar
+
+            if resident.s_clothing_type == 'Casual':
+                num_clothing = 1
+                icl=37
+            else:
+                num_clothing = 0.2
+                icl = 35
+
+            TempPerson = ((Tpiel - building.temp_exterior)/icl)
+            temperatura += TempPerson
+
+            TempRadiacion = (building.superficie_Edificio * building.q_radiaton * n)/24
+
+            return TempPerson + TempRadiacion #Devuelve en Calor (Watts)
+    
+
+    @staticmethod
+    def tempApartament( k_apartment):
+        try:
+            return round(building.temp_exterior + (Logic.QTotal(k_apartment))/(building.superficie_Edificio * 17),3)
+        except:
+            return None
 
 
 
 
 
 
-    def TransferenciaTemperatura(k_apartment)
+
+    @staticmethod
+    def TransferenciaTemperatura(k_apartment):
 
         apt = building.Apartments[k_apartment]
 
         piso = k_apartment // 100
 
-        if q_number_of_bedrooms == 1:
+        if apt.q_number_of_bedrooms == 1:
             size = "pequeño"
-        elif q_number_of_bedrooms == 2:
+        elif apt.q_number_of_bedrooms == 2:
             size = "mediano"
-        elif q_number_of_bedrooms == 3:
+        elif apt.q_number_of_bedrooms == 3:
             size = "grande"
 
         Scontacto = {
@@ -492,7 +569,8 @@ class Logic():
             "mediano": {"pared": 34.5, "techo": 391, "piso": 391},
             "grande": {"pared": 11.5, "techo": 483, "piso": 483},
         }
-
+        Q = []
+        i=0
         for neighbor in apt.neighbors:
             posVecino = neighbor.k_apartment // 100
             if posVecino == piso:
@@ -502,13 +580,29 @@ class Logic():
             elif posVecino < piso:
                 posicion = "piso"
 
+            Stotal = Scontacto[size][posicion]
+
+            Q.append(round(building.q_conductividad * Stotal * (apt.q_temperature - apt.neighbors[i].q_temperature)/building.grosor, 1))
+            i += 1
+        return Q
+
+
 
 
 if __name__ == '__main__':
     BDD.loadApartments(building)
     BDD.loadNeighbors(building)
     BDD.loadResidents(building)
+    for apt in building.Apartments:
+        print(apt)
+        apartment = building.getApartment(apt)
+        print(Logic.TransferenciaTemperatura(apartment.k_apartment))
+        print(Logic.QTotal(apartment.k_apartment))
+        print(Logic.tempApartament(apartment.k_apartment))
+        print("\n")
+    input("")
     Menu.initialMenu()
+
 
     #    bd = Building()
     #    BDD.loadNeighbors(bd)
