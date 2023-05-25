@@ -29,6 +29,7 @@ class Database:
                 user="postgres",
                 password="password")
 
+
     def executeQuery(self, query, args=None):
         """Method to execute a query on the database."""
         cursor = self.connection.cursor()
@@ -49,6 +50,7 @@ class Database:
             raise
         finally:
             cursor.close()
+
 
     def closeConnection(self):
         """Method to close the database connection."""
@@ -84,6 +86,7 @@ class Apartment:
         self.neighbors = []
         self.residents = []
         self.b_is_habitable = b_is_habitable
+        self.q_temperature_apartment = 0
 
     def addNeighbor(self, neighbor):
         if neighbor not in self.neighbors:
@@ -99,8 +102,12 @@ class Apartment:
         print(f'[+]==== Info del apartamento: {self.k_apartment}====[+]\n\n'
               f''
               f'[+] Es Habitable: {self.b_is_habitable} \n'
-              f'[+] Vecinos: {self.neighbors} \n'
-              f'[+] Humedad del aire:  {self.q_air_humidity} \n'
+              f'[+] Vecinos: \n')
+        for neighbor in self.neighbors:
+            print(f'\t[-] Número: {neighbor.k_apartment}\n'
+                  f'\t[-] Temp: {neighbor.q_temperature_apartment}')
+
+        print(f'\n[+] Humedad del aire:  {self.q_air_humidity} \n'
               f'[+] Material del apartamento: {self.s_apartment_material} \n'
               f'[+] Tamaño del apartamento: {self.q_number_of_bedrooms} \n'
               f'[+] Cantidad de personas: {self.q_number_of_occupants} \n'
@@ -114,8 +121,17 @@ class Apartment:
 
 
 class Building:
+
+
+
     def __init__(self):
         self.Apartments = {}
+        # Condiciones para un edicifio en Bogotá
+   #     self.Text = 17 # 15-25
+    #    self.HumedadAir = 70 # 20-80%
+
+
+
 
     def addApartment(self, k_apartment, q_air_humidity, s_apartment_material, q_number_of_bedrooms,
                      q_number_of_occupants, personClothing):
@@ -127,10 +143,14 @@ class Building:
             print("The apartment already exists")
             self.Apartments[k_apartment].getInfo()
 
+    def getApartment(self, k_apartment):
+        apt = self.Apartments[k_apartment]
+        return apt
+
     def addNeighbor(self, k_apartment1, k_apartment2):
         if k_apartment1 in self.Apartments and k_apartment2 in self.Apartments:
-            self.Apartments[k_apartment1].addNeighbor(k_apartment2)
-            self.Apartments[k_apartment2].addNeighbor(k_apartment1)
+            self.Apartments[k_apartment1].addNeighbor(self.getApartment(k_apartment2)) #intento cambio
+            self.Apartments[k_apartment2].addNeighbor(self.getApartment(k_apartment1))
 
 
 
@@ -428,6 +448,59 @@ class Menu:
                 input("Press any key to continue...")
                 Menu.initialMenu()
 
+
+
+class Logic():
+
+
+    def run():
+        self.TransferenciaTemperatura()
+
+    def TempApartment(k_apartment):
+        
+        Tactivity = {
+            "reposo": 36,
+            "ligera": 37,
+            "moderada": 38,
+            "intensa": 39
+        }
+        
+        Tpiel = Tactivity[self.Activity]
+        Spersona = 1.8
+        n = 0.3  # eficiencia de absorción hormigon 0.2-0.4, cambia al pintar
+
+
+
+
+
+
+    def TransferenciaTemperatura(k_apartment)
+
+        apt = building.Apartments[k_apartment]
+
+        piso = k_apartment // 100
+
+        if q_number_of_bedrooms == 1:
+            size = "pequeño"
+        elif q_number_of_bedrooms == 2:
+            size = "mediano"
+        elif q_number_of_bedrooms == 3:
+            size = "grande"
+
+        Scontacto = {
+            "pequeño": {"pared": 51, "techo": 357, "piso": 357},
+            "mediano": {"pared": 34.5, "techo": 391, "piso": 391},
+            "grande": {"pared": 11.5, "techo": 483, "piso": 483},
+        }
+
+        for neighbor in apt.neighbors:
+            posVecino = neighbor.k_apartment // 100
+            if posVecino == piso:
+                posicion = "pared"
+            elif posVecino > piso:
+                posicion = "techo"
+            elif posVecino < piso:
+                posicion = "piso"
 
 
 
