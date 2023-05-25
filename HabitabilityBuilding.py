@@ -505,6 +505,36 @@ class Logic():
         self.TransferenciaTemperatura()
 
     @staticmethod
+    def TempTotal():
+        return self.QTotal() / self.CTotal() 
+
+    @staticmethod
+    def Habitable(k_apartment):
+        apt = building.Apartments[k_apartment]
+        apt.temp = apt.temp + self.TempTotal(k_apartment)
+
+        Thumedad = {
+            0: [25, 28],
+            10: [24, 27],
+            20: [20, 24],
+            30: [19, 23],
+            40: [18, 22],
+            50: [17, 21],
+            60: [16, 20],
+            70: [15, 19],
+            80: [14, 18],
+            90: [13, 17],
+            100: [12, 16]
+        }
+
+        if apt.temp > 18 and apt.temp < 24:
+            return True
+        else:
+            return False
+
+
+
+    @staticmethod
     def QTotal(k_apartment):
                 
         apt = building.Apartments[k_apartment]
@@ -538,19 +568,12 @@ class Logic():
 
             return TempPerson + TempRadiacion #Devuelve en Calor (Watts)
     
-
     @staticmethod
     def tempApartament( k_apartment):
         try:
             return round(building.temp_exterior + (Logic.QTotal(k_apartment))/(building.superficie_Edificio * 17),3)
         except:
             return None
-
-
-
-
-
-
 
     @staticmethod
     def TransferenciaTemperatura(k_apartment):
