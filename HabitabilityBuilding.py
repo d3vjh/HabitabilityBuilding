@@ -87,6 +87,7 @@ class Apartment:
         self.residents = []
         self.b_is_habitable = b_is_habitable
         self.q_temperature = 0 # Toca modificarlo, pero inicialmente vale 0
+        self.QNew = 0
 
     def addNeighbor(self, neighbor):
         if neighbor not in self.neighbors:
@@ -499,19 +500,41 @@ class Menu:
 
 
 class Logic():
-
+    
 
     def run():
         self.TransferenciaTemperatura()
 
     @staticmethod
-    def TempTotal():
-        return self.QTotal() / self.CTotal() 
+    def TempTotal(k_apartment):
+        apt = building.Apartments[k_apartment]
+        # modificar Superficie a Apartamento
+        try:
+            return round((building.temp_exterior + Logic.QTransferencia(k_apartment) / (building.superficie_Edificio/35) * 17),3)
+        except:
+            return None
+
+    def QTransferencia(k_apartment):
+        apt = building.Apartments[k_apartment]
+        temperature = Logic.QTotal(k_apartment) - (sum(Logic.TransferenciaTemperatura(k_apartment)))
+        suma = Logic.TransferenciaTemperatura(k_apartment)
+        print(f'Suma de apt{suma}')
+        input("")
+        apt.q_temperature = temperature
+        
+        i = 0
+        for neighbor in apt.neighbors:
+            neighbor.q_temperature += Logic.TransferenciaTemperatura(k_apartment)[i]
+            i += 1
+
+        return apt.q_temperature
+
+
 
     @staticmethod
     def Habitable(k_apartment):
         apt = building.Apartments[k_apartment]
-        apt.temp = apt.temp + self.TempTotal(k_apartment)
+        tempHumedad = round((apt.q_air_humidity / 10 )*10 , 3)
 
         Thumedad = {
             0: [25, 28],
@@ -526,16 +549,35 @@ class Logic():
             90: [13, 17],
             100: [12, 16]
         }
+        
+        TMinimo = Thumedad[apt.q_air_humidity][0]
+        TMaximo = Thumedad[apt.q_air_humidity][1]
 
-        if apt.temp > 18 and apt.temp < 24:
+
+        if apt.q_temperature < 20:
+            print("La humedad en el aire es muy baja, mantente hidratado")
+        elif apt.q_temperature < 80:
+            print("La humedad en el aire es muy alta, cuidese del moho")
+
+        if TMinimo <= tempHumedad <= TMaximo:
             return True
         else:
+            if tempHumedad > TMaximo: 
+                if tempHumedad - TMaximo <= 1:
+                    print("Baja la temperatura pintando de Blanco")
+                else:
+                    print("Compra Aire acondicionado")
+            if tempHumedad < TMinimo:
+                if tempHumedad - TMinimo >= -1:
+                    print("Suba la temperatura pintando de Negro")
+                else:
+                    print("Compra un calentador")
             return False
 
 
 
     @staticmethod
-    def QTotal(k_apartment):
+    def QTotal(k_apartment): # Calor interno del apartamento sin transferencia
                 
         apt = building.Apartments[k_apartment]
 
@@ -565,8 +607,8 @@ class Logic():
             temperatura += TempPerson
 
             TempRadiacion = (building.superficie_Edificio * building.q_radiaton * n)/24
-
-            return TempPerson + TempRadiacion #Devuelve en Calor (Watts)
+            apt.q_temperature = TempPerson + TempRadiacion
+            return apt.q_temperature #Devuelve en Calor (Watts)
     
     @staticmethod
     def tempApartament( k_apartment):
@@ -618,14 +660,17 @@ if __name__ == '__main__':
     BDD.loadApartments(building)
     BDD.loadNeighbors(building)
     BDD.loadResidents(building)
-    for apt in building.Apartments:
-        print(apt)
-        apartment = building.getApartment(apt)
-        print(Logic.TransferenciaTemperatura(apartment.k_apartment))
-        print(Logic.QTotal(apartment.k_apartment))
-        print(Logic.tempApartament(apartment.k_apartment))
-        print("\n")
-    input("")
+#    for apt in building.Apartments:
+        #        print(apt)
+#        apartment = building.getApartment(apt)
+#        print(f'Transferencia Temperatura: {Logic.TransferenciaTemperatura(apartment.k_apartment)}')
+#        print(f'QTotal: {Logic.QTotal(apartment.k_apartment)}')
+#        print(f'tempApartment: {Logic.tempApartament(apartment.k_apartment)}')
+#        print(f'TempTotal: {Logic.TempTotal(apartment.k_apartment)}')
+#        print(f'Habitable: {Logic.Habitable(apartment.k_apartment)}')
+#        print(f'QTransferencia: {Logic.QTransferencia(apartment.k_apartment)}')
+#        print("\n")
+#    input("")
     Menu.initialMenu()
 
 
