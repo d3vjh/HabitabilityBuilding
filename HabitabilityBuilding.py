@@ -86,8 +86,8 @@ class Apartment:
         self.neighbors = []
         self.residents = []
         self.b_is_habitable = b_is_habitable
-        self.q_temperature = 0 # Toca modificarlo, pero inicialmente vale 0
-        self.QNew = 0
+        self.q_temperature_individual = 0 # Temperatura individual, aislado del mundo
+        self.q_temperature = 0 # Afectado por los vecinos -> Va en la BDD 
 
     def addNeighbor(self, neighbor):
         if neighbor not in self.neighbors:
@@ -577,43 +577,55 @@ class Logic():
 
 
     @staticmethod
-    def QTotal(k_apartment): # Calor interno del apartamento sin transferencia
+    def QTotal(k_apartment): # CALOR interno del apartamento sin transferencia
                 
         apt = building.Apartments[k_apartment]
 
         Tactivity = {
-            "Reposo": 36,
-            "Ligera": 37,
-            "Moderada": 38,
-            "Intensa": 39
+            "Reposo": 37,
+            "Ligera": 38,
+            "Moderada": 39,
+            "Intensa": 40
         }
         
-        temperatura = 0
+        temperatura = 0 # Revisar
+        Spersona = 1.8 # m^2
+        n = 0.3  # eficiencia de absorción hormigon 0.2-0.4, cambia al pintar
+
 
         for resident in apt.residents:
 
             Tpiel = Tactivity[resident.s_activity]
-            Spersona = 1.8
-            n = 0.3  # eficiencia de absorción hormigon 0.2-0.4, cambia al pintar
-
+ 
             if resident.s_clothing_type == 'Casual':
                 num_clothing = 1
-                icl=37
+                indice_vestimenta = 0.013811
             else:
                 num_clothing = 0.2
-                icl = 35
+                indice_vestimenta = 0.069689
 
-            TempPerson = ((Tpiel - building.temp_exterior)/icl)
-            temperatura += TempPerson
+            TempPerson = ((Tpiel - building.temp_exterior)/indice_vestimenta)
+            temperatura += TempPerson # Revisar
 
-            TempRadiacion = (building.superficie_Edificio * building.q_radiaton * n)/24
-            apt.q_temperature = TempPerson + TempRadiacion
-            return apt.q_temperature #Devuelve en Calor (Watts)
+        
+        TempRadiacion = (building.superficie_Edificio * building.q_radiaton * n)/24 # Radiación -> Kw/d -> Kw/h   
+        apt.q_temperature_individual = temperatura + TempRadiacion
+        return apt.q_temperature_individual #Devuelve en Calor (Watts)
     
     @staticmethod
-    def tempApartament( k_apartment):
+    def tempApartament(k_apartment): # Calcula Calor C°
+
+        apt = building.Apartments[k_apartment]
+            
+        if apt.q_number_of_bedrooms == 1: 
+            superficie = 63
+        elif apt.q_number_of_bedrooms == 2:
+            superficie = 69
+        elif apt.q_number_of_bedrooms == 3:
+            superficie = 132
         try:
-            return round(building.temp_exterior + (Logic.QTotal(k_apartment))/(building.superficie_Edificio * 17),3)
+            temperaturaInterna = round(building.temp_exterior + (Logic.QTotal(k_apartment))/(superficie * 17),3)
+            return temperaturaInterna 
         except:
             return None
 
@@ -660,17 +672,13 @@ if __name__ == '__main__':
     BDD.loadApartments(building)
     BDD.loadNeighbors(building)
     BDD.loadResidents(building)
-#    for apt in building.Apartments:
-        #        print(apt)
-#        apartment = building.getApartment(apt)
-#        print(f'Transferencia Temperatura: {Logic.TransferenciaTemperatura(apartment.k_apartment)}')
-#        print(f'QTotal: {Logic.QTotal(apartment.k_apartment)}')
-#        print(f'tempApartment: {Logic.tempApartament(apartment.k_apartment)}')
-#        print(f'TempTotal: {Logic.TempTotal(apartment.k_apartment)}')
-#        print(f'Habitable: {Logic.Habitable(apartment.k_apartment)}')
-#        print(f'QTransferencia: {Logic.QTransferencia(apartment.k_apartment)}')
-#        print("\n")
-#    input("")
+
+    for apt in building.Apartments:
+        apartment = building.getApartment(apt)
+        print(f'CALOR Individual[{apartment.k_apartment}]: {Logic.QTotal(apartment.k_apartment)}')
+        print(f'Temperatura Individual[{apartment.k_apartment}]: {Logic.tempApartament(apartment.k_apartment)}')
+        print("\n")
+        input("")
     Menu.initialMenu()
 
 
