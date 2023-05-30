@@ -103,6 +103,15 @@ class Apartment:
         if resident not in self.residents:
             self.residents.append(resident)
 
+    def delResidents(self, resident):
+        if resident in self.residents:
+            self.residents.remove(resident)
+        else:
+            print("[!] Error, residente no encontrado! ")
+            print(f'ID, del que llego a delResidents: {resident.k_person}')
+            print(f'Nombre del que llego a delResidents: {resident.s_name}')
+            input("")
+
 
     def getInfo(self):
         print(f'[+]==== Info del apartamento: {self.k_apartment}====[+]\n\n'
@@ -133,11 +142,10 @@ class Apartment:
                   f'\t[-] Actividad: {person.s_activity}\n')
 
     def getPerson(self, k_person):
-            for person in self.residents:
-                if person.k_person == k_person:
-                    return person
-                else:
-                    return None;
+        for person in self.residents:
+            if person.k_person == k_person:
+                return person 
+        return None
 
     def getTemperatureNeighbors(self):
             TempVecinos = []
@@ -151,7 +159,6 @@ class Apartment:
 class Building:
 
 
-
     def __init__(self):
         self.Apartments = {}
         # Condiciones para un edicifio en Bogotá
@@ -161,7 +168,6 @@ class Building:
         self.q_conductividad = 1.7  # Conductividad térmica hormigon
         self.grosor = 0.1  # Grosor hormigon
         self.superficie_Edificio = 312.871 # m^2
-
 
 
     def addApartment(self, k_apartment, q_air_humidity, s_apartment_material, q_number_of_bedrooms,
@@ -174,9 +180,11 @@ class Building:
             print("The apartment already exists")
             self.Apartments[k_apartment].getInfo()
 
+
     def getApartment(self, k_apartment):
         apt = self.Apartments[k_apartment]
         return apt
+
 
     def addNeighbor(self, k_apartment1, k_apartment2):
         if k_apartment1 in self.Apartments and k_apartment2 in self.Apartments:
@@ -199,6 +207,8 @@ class Person:
         self.k_apartment = k_apartment
         self.s_activity = s_activity
 
+    
+
 
 
 class Graphic:
@@ -206,20 +216,20 @@ class Graphic:
     @staticmethod
     def loadGraph():
         
-        for i in building.Apartments:
+        for apartment in building.Apartments:
             # agrega el nodo correspondiente en el grafo
-            apt = building.getApartment(i)
+            apt = building.Apartments[apartment]
             
-            G.add_node(i, number=apt.k_apartment, b_is_habitable=apt.b_is_habitable)
+            G.add_node(apartment, number=apt.k_apartment, b_is_habitable=apt.b_is_habitable)
             
             # itera sobre los vecinos del apartamento actual
-            for neighbor_number in building.Apartments[apt.k_apartment].neighbors:
+            for neighbor_number in apt.neighbors:
                 # busca el nodo correspondiente en el grafo usando su número de apartamento
                 neighbor_node = next((node for node in G.nodes() if G.nodes[node]['number'] == neighbor_number.k_apartment), None)
                 
                 # si se encontró el nodo, agrega la arista correspondiente
                 if neighbor_node:
-                    G.add_edge(i, neighbor_node)
+                    G.add_edge(apartment, neighbor_node)
 
 #        for node in G.nodes():
 #            print(G.nodes[node]['number'])
@@ -228,6 +238,7 @@ class Graphic:
 #            print("[+]")
         Graphic.viewGraph()
 
+
     def viewGraph():
         node_colors = ['green' if G.nodes[node]['b_is_habitable'] else 'red' for node in G.nodes()]
         pos = nx.spectral_layout(G)
@@ -235,6 +246,7 @@ class Graphic:
         plt.savefig('grafo.png', facecolor='#1A1B26')
         os.system("kitty +kitten icat /home/d3vjh/Documents/UD/HabitabilityBuilding/grafo.png")
         Graphic.clearGraph()
+
 
     def clearGraph():
         G.clear()
@@ -271,6 +283,7 @@ class BDD:
                 return False
         except:
             return False
+        
 #Create
     @staticmethod
     def createPerson(k_person, s_name, s_last_name, s_clothing_type, k_apartment, s_activity):
@@ -331,6 +344,55 @@ class BDD:
         
 
 
+
+    @staticmethod
+    def deletePerson(k_apartment, k_person):
+        try:
+            q = "DELETE FROM person WHERE k_person = %s;"
+            args = (k_person,)
+            db.executeQuery(q, args)
+            # Agregar el resto de parámetros && la condición NOT NULL
+
+            # DEBE llamar a addResidents()
+            
+            apt = building.Apartments[k_apartment]
+            k_person = int(k_person) 
+
+            resident = apt.getPerson(k_person)
+#            print(resident)
+#            print(apt.residents)
+#            input("Test.... en deletePerson")
+            apt.delResidents(resident)
+
+            
+            # Obtenemos el valor actual de ocupantes en el edificio
+            q = "SELECT q_number_of_occupants FROM apartment WHERE k_apartment = %s"
+            args = (k_apartment,)
+            numAct = db.executeQuery(q, args)
+            num = list(numAct)
+            num = num[0][0]
+#            print(num)
+#            print(type(num))
+            # Restamos en uno, el valor de q_number_of_occupants
+            q = "UPDATE apartment SET q_number_of_occupants = %s WHERE k_apartment = %s"
+            num -= 1
+            args = (num, k_apartment,)
+            db.executeQuery(q, args)
+
+            building.Apartments[k_apartment].q_number_of_occupants -= 1
+
+            apt.b_is_habitable = True
+
+
+            
+        except psycopg2.Error as e:
+            print("[BDD] Error en la eliminación de la persona: ", e)
+            input("Press any key to continue...")
+
+
+
+
+
     @staticmethod
     def loadNeighbors(build):
         try:
@@ -389,14 +451,18 @@ class Menu:
 
         print(lista)
 
+
         k_person = int(input("[+] Ingrese el número de identificación de la persona: "))
 
         while k_person not in lista:    
-            k_person = input("[+] Numero de identificación no encontrado, porfavor verifique de nuevo: ")
+            k_person = int(input("[+] Numero de identificación no encontrado, porfavor verifique de nuevo: "))
 
         
         person = building.Apartments[k_apartment].getPerson(k_person)
         print(person.s_name)
+        print(type(person.k_person))
+        input("Press any key to continue...")
+        Menu.initialMenu()
         
 
 
@@ -410,9 +476,9 @@ class Menu:
         while k_apartment not in building.Apartments:
             k_apartment = int(input("[!] El número de apartamento no existe, porfavor verifique de nuevo: "))
 
-        k_person = input("[+] Ingrese el número de identificación de la persona: ")
+        k_person = int(input("[+] Ingrese el número de identificación de la persona: "))
         while BDD.isPerson(k_person):    
-            k_person = input("[+] Numero de identificación ya ingresado, porfavor verifique de nuevo: ")
+            k_person = int(input("[+] Numero de identificación ya ingresado, porfavor verifique de nuevo: "))
             
         s_name = input("[+] Ingrese el nombre de la persona: ")
         while not re.match("^[A-Za-z]*$", s_name):
@@ -460,6 +526,33 @@ class Menu:
        
 
     @staticmethod
+    def Menu_deletePerson():
+        os.system("clear")
+
+        k_apartment = int(input("[+] Ingrese el número del apartamento en el que ya no va a residir: "))
+        while k_apartment not in building.Apartments:
+            k_apartment = int(input("[!] El número de apartamento no existe, porfavor verifique de nuevo: "))
+
+        apt = building.Apartments[k_apartment]
+        print(f'===[]Lista de residentes del {k_apartment}[]===')
+        print(f'{apt.residents}')
+
+        for resident in apt.residents:
+            print(f'\t[*] Nombre: {resident.s_name}')
+            print(f'\t[*] Identificación: {resident.k_person}')
+
+        k_person = int(input("[+] Ingrese el número de identificación de la persona: "))
+        while not BDD.isPerson(k_person):    
+            k_person = int(input("[+] Numero de identificación NO REGISTRADO, porfavor verifique de nuevo: "))
+
+        BDD.deletePerson(k_apartment, k_person)
+        
+        print(f'[√] Persona eliminada correctamente')
+        input("Press any key to continue...")
+        Menu.initialMenu()
+
+
+    @staticmethod
     def Menu_getApartmentInfo():
         os.system("clear")
         numApartment = int(input("[+] Ingrese el número del apartamento que desea consultar: "))
@@ -489,7 +582,8 @@ class Menu:
         print("[1] Obtener información de un apartamento")
         print("[2] Agregar una persona a un apartamento")
         print("[3] Actualizar una persona de un apartamento")
-        print("[4] Dibujar el Grafo")
+        print("[4] Eliminar una persona de un apartamento")
+        print("[5] Dibujar el Grafo")
         print("[9] Salir")
 
 
@@ -503,6 +597,8 @@ class Menu:
                 elif opc == 3:
                     Menu.Menu_updatePerson()
                 elif opc == 4:
+                    Menu.Menu_deletePerson()
+                elif opc == 5:
                     Menu.Menu_getGraph()
                 elif  opc == 9:
                     sys.exit(0)
