@@ -344,6 +344,17 @@ class BDD:
             input("Press any key to continue...")
         
 
+    @staticmethod
+    def updatePerson(k_person, s_name, s_last_name, s_clothing_type, k_apartment, s_activity):
+        print("")
+        try:
+            q = "UPDATE PERSON SET s_name = %s, s_last_name = %s, s_clothing_type = %s, s_activity = %s WHERE k_person = %s;"
+            args = (s_name, s_last_name, s_clothing_type, s_activity, k_person,)
+            db.executeQuery(q, args)
+        except psycopg2.Error as e:
+            print("[BDD] Error en la actualización de la persona: ", e)
+            input("Press any key to continue...")
+
 
 
     @staticmethod
@@ -532,6 +543,8 @@ class Menu:
             print(f'[+] {resident.s_clothing_type}')
             print(f'[+] {resident.s_activity}')
             input("Press any key to continue...")
+            BDD.updatePerson(resident.k_person, resident.s_name, resident.s_last_name, resident.s_clothing_type, resident.k_apartment, resident.s_activity)
+
             Menu.initialMenu()
         
 
