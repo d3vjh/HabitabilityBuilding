@@ -3,7 +3,8 @@
 import psycopg2, signal, os, sys, re
 import networkx as nx
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+#from mpl_toolkits.mplot3d import Axes3D
+import time
 
 
 class Database:
@@ -381,9 +382,6 @@ class BDD:
 
             building.Apartments[k_apartment].q_number_of_occupants -= 1
 
-            apt.b_is_habitable = True
-
-
             
         except psycopg2.Error as e:
             print("[BDD] Error en la eliminación de la persona: ", e)
@@ -435,34 +433,106 @@ class Menu:
 
     @staticmethod
     def Menu_updatePerson():
+
         os.system("clear")
-        k_apartment = int(input("[+] Ingrese el número del apartamento en el que está: "))
-        lista = []
+
+        print("[+] Actualizar Persona [+]") 
+
+        k_apartment = int(input("[+] Ingrese el número del apartamento en el que se encuentra: "))
         while k_apartment not in building.Apartments:
             k_apartment = int(input("[!] El número de apartamento no existe, porfavor verifique de nuevo: "))
+
+        apt = building.Apartments[k_apartment]
         
-        for person in building.Apartments[k_apartment].residents:
-            print(f'\t[-] Id: {person.k_person} \n'
-                  f'\t[-] Nombre: {person.s_name}\n'
-                  f'\t[-] Apellido: {person.s_last_name}\n'
-                  f'\t[-] Ropa: {person.s_clothing_type}\n'
-                  f'\t[-] Actividad: {person.s_activity}\n')
-            lista.append(person.k_person)
-
-        print(lista)
-
+        print(f'Residentes del Apartamento N° {k_apartment}')
+        for resident in apt.residents:
+            print(f'\t[*] Nombre: {resident.s_name}')
+            print(f'\t[*] Identificación: {resident.k_person}\n')
 
         k_person = int(input("[+] Ingrese el número de identificación de la persona: "))
+        while not BDD.isPerson(k_person):    
+            k_person = int(input("[+] Numero de identificación NO REGISTRADO, porfavor verifique de nuevo: "))
+      
+        resident = apt.getPerson(k_person)
 
-        while k_person not in lista:    
-            k_person = int(input("[+] Numero de identificación no encontrado, porfavor verifique de nuevo: "))
+        print(f'¿Que desea modificar?')
 
+        print(f'[1] Nombre y Apellido')
+        print(f'[2] Tipo de ropa')
+        print(f'[3] Tipo de actividad')
+        print(f'[4] Salir')
+
+
+        while True:
+            try:
+                opc = int(input("Ingrese una opción: "))
+                if opc == 1:
+                    s_name = input("[+] Ingrese el nombre de la persona: ")
+                    while not re.match("^[A-Za-z]*$", s_name):
+                        s_name = input("[!] Ingrese un nombre válido, sin números ni carácteres especiales: ")
+
+                    s_last_name = input("[+] Ingrese el apellido de la persona: ")
+                    while not re.match("^[A-Za-z]*$", s_last_name):
+                        s_last_name =  input("[!] Ingrese un apellido válido, sin números ni carácteres especiales:")
+
+                    resident.s_name = s_name
+                    resident.s_last_name = s_last_name
+
+                elif opc == 2:
+                    clothing_type = {
+                        '1' : 'Casual',
+                        '2' : 'Desnudo'
+                        }
+                    print("[+] Selecciona el tipo de ropa: ")
+                    print(f'\t1. Casual\n' 
+                      f'\t2. Desnudo\n')
+                    s_clothing_type = input("[$]> ")
+                    while s_clothing_type not in clothing_type:
+                        s_clothing_type = input("[!] Ingrese una opción válida Porfavor: ")
+                
+                    s_clothing_type = clothing_type[s_clothing_type]
+
+                    resident.s_clothing_type = s_clothing_type
+
+
+                elif opc == 3:
+                    activity = {
+                        '1' : 'Reposo',
+                        '2' : 'Ligera',
+                        '3' : 'Moderada',
+                        '4' : 'Intensa'
+                        }
+                    print("[+] Selecciona la actividad a realizar: ")
+                    print(f'\t1. Reposo\n'
+                    f'\t2. Ligera\n'
+                    f' \t3. Moderada\n'
+                    f'  \t4. Intensa\n')
+                    s_activity= input("[$]> ")
+                    while s_activity not in activity:
+                        s_activity= input("[!] Ingrese una opción válida Porfavor: ")
         
-        person = building.Apartments[k_apartment].getPerson(k_person)
-        print(person.s_name)
-        print(type(person.k_person))
-        input("Press any key to continue...")
-        Menu.initialMenu()
+                    s_activity = activity[s_activity]
+
+                    resident.s_activity = s_activity
+
+                else:
+                    Menu.initialMenu()
+            except ValueError:
+                print("[!] Debe ingresar un número entero válido.")
+                input("Press any key to continue...")
+                Menu.initialMenu()
+            except KeyError:
+                print("[!] La opción elegida no es válida.")
+                input("Press any key to continue...")
+                Menu.initialMenu()
+ 
+            print(f'[+] {resident.s_name}')
+            print(f'[+] {resident.s_last_name}')
+            print(f'[+] {resident.k_apartment}')
+            print(f'[+] {resident.s_clothing_type}')
+            print(f'[+] {resident.s_activity}')
+            input("Press any key to continue...")
+            Menu.initialMenu()
         
 
 
@@ -535,11 +605,9 @@ class Menu:
 
         apt = building.Apartments[k_apartment]
         print(f'===[]Lista de residentes del {k_apartment}[]===')
-        print(f'{apt.residents}')
-
         for resident in apt.residents:
             print(f'\t[*] Nombre: {resident.s_name}')
-            print(f'\t[*] Identificación: {resident.k_person}')
+            print(f'\t[*] Identificación: {resident.k_person}\n')
 
         k_person = int(input("[+] Ingrese el número de identificación de la persona: "))
         while not BDD.isPerson(k_person):    
@@ -563,6 +631,7 @@ class Menu:
             building.Apartments[numApartment].getInfo()
             input("Press any key to continue...")
         Menu.initialMenu()
+
 
     @staticmethod
     def Menu_getGraph():
@@ -809,30 +878,32 @@ class Logic():
 
 
 if __name__ == '__main__':
+
+
     BDD.loadApartments(building)
     BDD.loadNeighbors(building)
     BDD.loadResidents(building)
 
-    for apt in building.Apartments:
-        apartment = building.getApartment(apt)
-        print(f'CALOR Individual[{apartment.k_apartment}]: {Logic.QTotal(apartment.k_apartment)}')
-        print(f'Temperatura Individual[{apartment.k_apartment}]: {Logic.tempApartament(apartment.k_apartment)}')
-        print(f'Vecinos: {apartment.getTemperatureNeighbors}')
-        print(f'Transferencia Calor[{apartment.k_apartment}]: {Logic.TransferenciaCalor(apartment.k_apartment)}')
-        print(f'Temperatura Vecinos[{apartment.k_apartment}]: {apartment.getTemperatureNeighbors()}')
+ #   for apt in building.Apartments:
+ #       apartment = building.getApartment(apt)
+ #       print(f'CALOR Individual[{apartment.k_apartment}]: {Logic.QTotal(apartment.k_apartment)}')
+ #       print(f'Temperatura Individual[{apartment.k_apartment}]: {Logic.tempApartament(apartment.k_apartment)}')
+#        print(f'Vecinos: {apartment.getTemperatureNeighbors}')
+#        print(f'Transferencia Calor[{apartment.k_apartment}]: {Logic.TransferenciaCalor(apartment.k_apartment)}')
+#        print(f'Temperatura Vecinos[{apartment.k_apartment}]: {apartment.getTemperatureNeighbors()}')#
 
-        print("\n")
+#        print("\n")
         
-    for apt in building.Apartments:
-        apartment = building.getApartment(apt)
-        print(f'CALOR Individual[{apartment.k_apartment}]: {Logic.QTotal(apartment.k_apartment)}')
-        print(f'Temperatura Individual[{apartment.k_apartment}]: {Logic.tempApartament(apartment.k_apartment)}')
-        print(f'Transferencia Calor[{apartment.k_apartment}]: {Logic.TransferenciaCalor(apartment.k_apartment)}')
-        print(f'Temperatura Vecinos[{apartment.k_apartment}]: {apartment.getTemperatureNeighbors()}')
-        print(f'QNew - q_temperature[{apartment.k_apartment}]: {Logic.QNew(apartment.k_apartment)}')
+#    for apt in building.Apartments:
+#        apartment = building.getApartment(apt)
+#        print(f'CALOR Individual[{apartment.k_apartment}]: {Logic.QTotal(apartment.k_apartment)}')
+#        print(f'Temperatura Individual[{apartment.k_apartment}]: {Logic.tempApartament(apartment.k_apartment)}')
+#        print(f'Transferencia Calor[{apartment.k_apartment}]: {Logic.TransferenciaCalor(apartment.k_apartment)}')
+#        print(f'Temperatura Vecinos[{apartment.k_apartment}]: {apartment.getTemperatureNeighbors()}')
+#        print(f'QNew - q_temperature[{apartment.k_apartment}]: {Logic.QNew(apartment.k_apartment)}')
 
-        print("\n")
-        input("")
+#        print("\n")
+        #input("")
 
 
     Menu.initialMenu()
