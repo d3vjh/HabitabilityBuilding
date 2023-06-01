@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.10 (Debian 13.10-0+deb11u1)
--- Dumped by pg_dump version 13.10 (Debian 13.10-0+deb11u1)
+-- Dumped from database version 13.11 (Debian 13.11-0+deb11u1)
+-- Dumped by pg_dump version 13.11 (Debian 13.11-0+deb11u1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -27,12 +27,12 @@ SET default_table_access_method = heap;
 CREATE TABLE public.apartment (
     k_apartment integer NOT NULL,
     q_air_humidity integer NOT NULL,
-    q_ambient_air_humidity integer NOT NULL,
     s_apartment_material character varying(50) NOT NULL,
     q_number_of_bedrooms integer NOT NULL,
     q_number_of_occupants integer NOT NULL,
     b_is_habitable boolean NOT NULL,
     k_building integer NOT NULL,
+    q_temperature integer,
     CONSTRAINT ck_id_building CHECK ((k_building = 1))
 );
 
@@ -73,7 +73,8 @@ CREATE TABLE public.person (
     s_name character varying(50) NOT NULL,
     s_last_name character varying(50) NOT NULL,
     s_clothing_type character varying(50) NOT NULL,
-    k_apartment integer NOT NULL
+    k_apartment integer NOT NULL,
+    s_activity character varying(20) NOT NULL
 );
 
 
@@ -83,42 +84,42 @@ ALTER TABLE public.person OWNER TO postgres;
 -- Data for Name: apartment; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.apartment (k_apartment, q_air_humidity, q_ambient_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable, k_building) FROM stdin;
-102	0	0	Concreto	1	0	f	1
-105	0	0	Concreto	3	0	f	1
-202	0	0	Concreto	1	0	f	1
-301	0	0	Concreto	1	0	f	1
-303	0	0	Concreto	2	0	f	1
-405	0	0	Concreto	3	0	f	1
-502	0	0	Concreto	1	0	f	1
-504	0	0	Concreto	2	0	f	1
-604	0	0	Concreto	2	0	f	1
-605	0	0	Concreto	3	0	f	1
-701	0	0	Concreto	1	0	f	1
-702	0	0	Concreto	1	0	f	1
-703	0	0	Concreto	2	0	f	1
-704	0	0	Concreto	2	0	f	1
-101	0	0	Concreto	1	2	f	1
-104	0	0	Concreto	2	2	f	1
-201	0	0	Concreto	1	1	f	1
-205	0	0	Concreto	3	3	f	1
-203	0	0	Concreto	2	1	f	1
-204	0	0	Concreto	2	1	f	1
-302	0	0	Concreto	1	1	f	1
-304	0	0	Concreto	2	1	f	1
-305	0	0	Concreto	3	1	f	1
-401	0	0	Concreto	1	1	f	1
-402	0	0	Concreto	1	1	f	1
-403	0	0	Concreto	2	1	f	1
-404	0	0	Concreto	2	1	f	1
-501	0	0	Concreto	1	1	f	1
-503	0	0	Concreto	2	2	f	1
-505	0	0	Concreto	3	2	f	1
-601	0	0	Concreto	1	2	f	1
-602	0	0	Concreto	1	2	f	1
-603	0	0	Concreto	2	3	f	1
-705	0	0	Concreto	3	1	f	1
-103	0	0	Concreto	2	0	t	1
+COPY public.apartment (k_apartment, q_air_humidity, s_apartment_material, q_number_of_bedrooms, q_number_of_occupants, b_is_habitable, k_building, q_temperature) FROM stdin;
+102	50	Hormigón	1	0	f	1	0
+202	50	Hormigón	1	0	f	1	0
+301	50	Hormigón	1	0	f	1	0
+405	50	Hormigón	3	0	f	1	0
+502	50	Hormigón	1	0	f	1	0
+604	50	Hormigón	2	0	f	1	0
+703	50	Hormigón	2	0	f	1	0
+704	50	Hormigón	2	0	f	1	0
+101	50	Hormigón	1	2	f	1	0
+205	50	Hormigón	3	3	f	1	0
+204	50	Hormigón	2	1	f	1	0
+302	50	Hormigón	1	1	f	1	0
+304	50	Hormigón	2	1	f	1	0
+305	50	Hormigón	3	1	f	1	0
+501	50	Hormigón	1	1	f	1	0
+505	50	Hormigón	3	2	f	1	0
+602	50	Hormigón	1	2	f	1	0
+603	50	Hormigón	2	3	f	1	0
+303	50	Hormigón	2	1	t	1	0
+503	50	Hormigón	2	2	t	1	0
+404	50	Hormigón	2	1	t	1	0
+401	30	Hormigón	1	1	f	1	0
+504	30	Hormigón	2	0	f	1	0
+702	30	Hormigón	1	0	f	1	0
+601	30	Hormigón	1	2	f	1	0
+701	10	Hormigón	1	0	f	1	0
+605	10	Hormigón	3	0	f	1	0
+105	10	Hormigón	3	0	f	1	0
+201	10	Hormigón	1	1	f	1	0
+403	10	Hormigón	2	1	t	1	0
+705	10	Hormigón	3	1	f	1	0
+103	30	Hormigón	2	2	t	1	0
+104	50	Hormigón	2	4	f	1	0
+203	30	Hormigón	2	0	f	1	0
+402	50	Hormigón	1	3	t	1	0
 \.
 
 
@@ -127,7 +128,7 @@ COPY public.apartment (k_apartment, q_air_humidity, q_ambient_air_humidity, s_ap
 --
 
 COPY public.building (k_building, q_radiaton_level) FROM stdin;
-1	radiaton
+1	4033.3
 \.
 
 
@@ -201,37 +202,37 @@ COPY public.neighbor (k_apartment1, k_apartment2) FROM stdin;
 -- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.person (k_person, s_name, s_last_name, s_clothing_type, k_apartment) FROM stdin;
-100030222	Sebastian	Gonzalez	Desnudo	601
-100030891	Jhonatan	Alvarez	Desnudo	603
-100008823	Catalina	Moreno	Desnudo	402
-100006930	Laura	Diaz	Desnudo	104
-100008607	Catalina	Sanchez	Desnudo	104
-100011245	Emmanuel	Garcia	Desnudo	503
-100019408	Sebastian	Gonzalez	Desnudo	601
-100014941	Hanna	Moreno	Desnudo	603
-100014935	Juan	Hernandez	Desnudo	201
-100022955	Felipe	Alvarez	Desnudo	401
-100030612	Catalina	Rodriguez	Desnudo	404
-100002315	Maria	Alvarez	Desnudo	504
-100030982	Carlos	Moreno	Desnudo	205
-100015328	Juan	Alvarez	Desnudo	705
-100006548	Felipe	Sanchez	Desnudo	205
-100027475	Carlos	Diaz	Desnudo	602
-100026515	Jhonatan	Hernandez	Desnudo	203
-100022843	Felipe	Sanchez	Desnudo	305
-100008047	Laura	Sanchez	Desnudo	603
-100019502	Jhonatan	Sanchez	Desnudo	501
-100007289	Maria	Gonzalez	Desnudo	101
-100030886	Ana	Rodriguez	Desnudo	302
-100000791	Ana	Hernandez	Desnudo	204
-100010875	Jhonatan	Jimenez	Desnudo	602
-100018704	Sergio	Jimenez	Desnudo	205
-100010158	Santiago	Sanchez	Desnudo	503
-100024728	Luis	Alvarez	Desnudo	304
-100001291	Luis	Alvarez	Desnudo	403
-100011303	Jhonatan	Gonzalez	Desnudo	504
-100015945	Laura	Sanchez	Desnudo	101
+COPY public.person (k_person, s_name, s_last_name, s_clothing_type, k_apartment, s_activity) FROM stdin;
+100030222	Sebastian	Gonzalez	Casual	601	Reposo
+100008607	Catalina	Sanchez	Casual	104	Reposo
+100030612	Catalina	Rodriguez	Casual	404	Reposo
+100022955	Felipe	Alvarez	Casual	401	Ligera
+100008047	Laura	Sanchez	Casual	603	Ligera
+100008823	Catalina	Moreno	Casual	402	Moderada
+100014941	Hanna	Moreno	Casual	603	Moderada
+100015328	Juan	Alvarez	Casual	705	Moderada
+100006548	Felipe	Sanchez	Casual	205	Intensa
+100010875	Jhonatan	Jimenez	Casual	602	Intensa
+100030891	Jhonatan	Alvarez	Casual	603	Reposo
+100000791	Ana	Hernandez	Casual	204	Reposo
+100027475	Carlos	Diaz	Casual	602	Ligera
+100019502	Jhonatan	Sanchez	Casual	501	Ligera
+100010158	Santiago	Sanchez	Casual	503	Ligera
+100011245	Emmanuel	Garcia	Casual	503	Moderada
+100018704	Sergio	Jimenez	Casual	205	Moderada
+100006930	Laura	Diaz	Casual	104	Intensa
+100014935	Juan	Hernandez	Casual	201	Intensa
+100002315	Maria	Alvarez	Casual	504	Intensa
+100007289	Maria	Gonzalez	Casual	101	Reposo
+100030886	Ana	Rodriguez	Casual	302	Reposo
+100011303	Jhonatan	Gonzalez	Casual	504	Reposo
+100030982	Carlos	Moreno	Casual	205	Ligera
+100001291	Luis	Alvarez	Casual	403	Ligera
+100015945	Laura	Preciado	Casual	101	Ligera
+100022843	Felipe	Preciado	Casual	305	Reposo
+100024728	Luis	Preciado	Casual	304	Ligera
+100019408	Sebastian	Preciado	Casual	601	Intensa
+1010101010	Sofia	Vergara	Casual	303	Ligera
 \.
 
 
