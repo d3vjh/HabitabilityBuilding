@@ -854,7 +854,7 @@ class Logic():
 
         for resident in apt.residents:
 
-            Tpiel = Tactivity[resident.s_activity]
+            #            Tactivity = Tactivity[resident.s_activity]
  
             if resident.s_clothing_type == 'Casual':
                 num_clothing = 1
@@ -863,9 +863,9 @@ class Logic():
                 num_clothing = 0.2
                 indice_vestimenta = 0.069689
 
-            TempPerson = ((Tpiel - building.temp_exterior)/indice_vestimenta)
-            temperatura += TempPerson # Revisar
-
+            TempPerson = ((Tactivity - building.temp_exterior)/indice_vestimenta)
+            temperatura += TempPerson # 
+#
         
         
         TempRadiacion = (building.superficie_Edificio * building.q_radiaton * n)/24 # Radiación -> Kw/d -> Kw/h   
